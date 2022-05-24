@@ -6,15 +6,23 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://example.com">
-  <title>Archives: 2022/5 | Hexo</title>
+  <title>Vagrant 制作自己的 Box 虚拟机镜像 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://example.com/archives/2022/05/index.html">
+  <meta name="description" content="系统环境介绍 Iso镜像: CentOS-7-x86_64-Minimal-2009.iso VirtualBox 版本: 6.1.34 Vagrant 版本: 2.2.19  VirtualBox 新建虚拟机 内存：2C&#x2F;4096G 硬盘： 系统盘：50G 数据盘：100G   声音、USB： 禁用 网络： 网络地址转换（NAT) 端口转发 -&gt; ssh 宿主机：127.0.0.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vagrant 制作自己的 Box 虚拟机镜像">
+<meta property="og:url" content="http://example.com/2022/05/22/Vagrant-%E5%88%B6%E4%BD%9C%E8%87%AA%E5%B7%B1%E7%9A%84-Box-%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%95%9C%E5%83%8F/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="系统环境介绍 Iso镜像: CentOS-7-x86_64-Minimal-2009.iso VirtualBox 版本: 6.1.34 Vagrant 版本: 2.2.19  VirtualBox 新建虚拟机 内存：2C&#x2F;4096G 硬盘： 系统盘：50G 数据盘：100G   声音、USB： 禁用 网络： 网络地址转换（NAT) 端口转发 -&gt; ssh 宿主机：127.0.0.">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/pic/vagrant1.png">
+<meta property="og:image" content="http://example.com/pic/vagrant2.png">
+<meta property="article:published_time" content="2022-05-22T08:23:19.000Z">
+<meta property="article:modified_time" content="2022-05-24T10:00:40.850Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="vagrant">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/pic/vagrant1.png">
   
     <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -150,63 +158,116 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-Vagrant-制作自己的-Box-虚拟机镜像" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2022" class="archive-year">2022</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/24/hello-world/" class="archive-article-date">
-  	<time datetime="2022-05-24T09:38:43.555Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-24</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/24/hello-world/">Hello World</a>
+    <h1 class="article-title" itemprop="name">
+      Vagrant 制作自己的 Box 虚拟机镜像
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/22/Vagrant-%E5%88%B6%E4%BD%9C%E8%87%AA%E5%B7%B1%E7%9A%84-Box-%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%95%9C%E5%83%8F/" class="archive-article-date">
+        
+        <a href="/2022/05/22/Vagrant-%E5%88%B6%E4%BD%9C%E8%87%AA%E5%B7%B1%E7%9A%84-Box-%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%95%9C%E5%83%8F/" class="archive-article-date">
   	<time datetime="2022-05-22T08:23:19.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-22</time>
 </a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/22/Vagrant-%E5%88%B6%E4%BD%9C%E8%87%AA%E5%B7%B1%E7%9A%84-Box-%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%95%9C%E5%83%8F/">Vagrant 制作自己的 Box 虚拟机镜像</a>
-    </h1>
-  
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="系统环境介绍"><a href="#系统环境介绍" class="headerlink" title="系统环境介绍"></a>系统环境介绍</h2><ul>
+<li>Iso镜像: CentOS-7-x86_64-Minimal-2009.iso</li>
+<li>VirtualBox 版本: 6.1.34</li>
+<li>Vagrant 版本: 2.2.19</li>
+</ul>
+<h2 id="VirtualBox-新建虚拟机"><a href="#VirtualBox-新建虚拟机" class="headerlink" title="VirtualBox 新建虚拟机"></a>VirtualBox 新建虚拟机</h2><ul>
+<li>内存：2C&#x2F;4096G</li>
+<li>硬盘：<ul>
+<li>系统盘：50G</li>
+<li>数据盘：100G</li>
+</ul>
+</li>
+<li>声音、USB： 禁用</li>
+<li>网络： 网络地址转换（NAT)</li>
+<li>端口转发 -&gt; ssh 宿主机：127.0.0.1 2222 &#x3D;&gt; 虚拟机：（空） 22</li>
+</ul>
+<p><img src="/./pic/vagrant1.png"></p>
+<h2 id="配置账户"><a href="#配置账户" class="headerlink" title="配置账户"></a>配置账户</h2><ul>
+<li>设置 sshd 远程登录</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">sed -i &#x27;s/#UseDNS no/UseDNS no/g&#x27; /etc/ssh/sshd_config</span><br><span class="line">sed -i &#x27;s/#GSSAPIAuthentication no/GSSAPIAuthentication no/g&#x27; /etc/ssh/sshd_config</span><br><span class="line">sed -i &#x27;s@PasswordAuthentication no@PasswordAuthentication yes@g&#x27; /etc/ssh/sshd_config</span><br><span class="line">sed -i &#x27;s@#PermitRootLogin yes@PermitRootLogin yes@g&#x27; /etc/ssh/sshd_config</span><br><span class="line">systemctl reload sshd</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-        <div class="article-info info-on-right">
-          
+<ul>
+<li>vagrant sudo 免密登陆</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">useradd vagrant</span><br><span class="line">echo &quot;vagrant&quot;|passwd --stdin vagrant</span><br><span class="line">echo &quot;vagrant  ALL=(ALL)       NOPASSWD: ALL&quot; &gt;&gt; /etc/sudoers.d/vagrant</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>安装 Vagrant 密钥</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">su - vagrant</span><br><span class="line">mkdir .ssh &amp;&amp; chmod 0700 .ssh</span><br><span class="line">wget --no-check-certificate \</span><br><span class="line">    https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub \</span><br><span class="line">    -O /home/vagrant/.ssh/authorized_keys</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">chmod 0600 .ssh/authorized_keys</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置Yum源"><a href="#配置Yum源" class="headerlink" title="配置Yum源"></a>配置Yum源</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">mkdir /etc/yum.repos.d/bak</span><br><span class="line">mv /etc/yum.repos.d/*  /etc/yum.repos.d/bak</span><br><span class="line">curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo</span><br><span class="line">yum install epel-release</span><br><span class="line">&#125;</span><br><span class="line">&#123;</span><br><span class="line">yum clean all</span><br><span class="line">yum makecache</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装-VitualBox-additions"><a href="#安装-VitualBox-additions" class="headerlink" title="安装 VitualBox additions"></a>安装 VitualBox additions</h2><ul>
+<li>安装编译工具</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">yum -y groupinstall Development tools</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>安装软件包</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">yum -y install xorg-x11-drivers xorg-x11-utils</span><br><span class="line">yum install -y perl gcc dkms kernel-devel kernel-headers make bzip2</span><br><span class="line">yum install -y vim wget lrzsz net-tools</span><br><span class="line">reboot</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>加载 Guest Additions CD Image 镜像</li>
+</ul>
+<p><img src="/./pic/vagrant2.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">mkdir -p /tmp/cdrom &amp;&amp; mount /dev/cdrom /tmp/cdrom</span><br><span class="line">sh /tmp/cdrom/VBoxLinuxAdditions.run</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="清理缓存数据"><a href="#清理缓存数据" class="headerlink" title="清理缓存数据"></a>清理缓存数据</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum  clean all</span><br><span class="line">init 0</span><br></pre></td></tr></table></figure>
+
+<h2 id="虚拟机-打包为-vagrant-box"><a href="#虚拟机-打包为-vagrant-box" class="headerlink" title="虚拟机 打包为 vagrant box"></a>虚拟机 打包为 vagrant box</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mkdir centos7-2009 &amp;&amp; cd centos7-2009 </span><br><span class="line"># centos7 为虚拟机的名字</span><br><span class="line">vagrant package --output centos7-9.box --base centos7</span><br><span class="line">==&gt; centos7: Clearing any previously set forwarded ports...</span><br><span class="line">==&gt; centos7: Exporting VM...</span><br><span class="line">==&gt; centos7: Compressing package to: /Users/dengyou/Vagrant_Pro/centos7-2009/centos7-9.box</span><br></pre></td></tr></table></figure>
+
+<h2 id="测试启动虚拟机啊"><a href="#测试启动虚拟机啊" class="headerlink" title="测试启动虚拟机啊"></a>测试启动虚拟机啊</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vagrant box add dengyouf/CentOS-7.9 centos7-9.box</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"># -*- mode: ruby -*-</span><br><span class="line"># vi: set ft=ruby :</span><br><span class="line">Vagrant.configure(&quot;2&quot;) do |config|</span><br><span class="line">   (1..2).each do |i|</span><br><span class="line">        config.vm.define &quot;node#&#123;i&#125;&quot; do |node|</span><br><span class="line">            # 设置虚拟机的Box</span><br><span class="line">            node.vm.box = &quot;dengyouf/CentOS-7.9&quot;</span><br><span class="line"></span><br><span class="line">            # 设置虚拟机的主机名</span><br><span class="line">            node.vm.hostname=&quot;centos-node#&#123;i&#125;&quot;</span><br><span class="line"></span><br><span class="line">            # 设置虚拟机的IP</span><br><span class="line">            node.vm.network &quot;private_network&quot;, ip: &quot;192.168.56.#&#123;100+i&#125;&quot;</span><br><span class="line"></span><br><span class="line">            # 设置主机与虚拟机的共享目录</span><br><span class="line">            node.vm.synced_folder &quot;.&quot;, &quot;/home/vagrant/share&quot;</span><br><span class="line"></span><br><span class="line">            # VirtaulBox相关配置</span><br><span class="line">            node.vm.provider &quot;virtualbox&quot; do |v|</span><br><span class="line">                # 设置虚拟机的名称</span><br><span class="line">                v.name = &quot;centos-node#&#123;i&#125;&quot;</span><br><span class="line">                # 设置虚拟机的内存大小</span><br><span class="line">                v.memory = 4096</span><br><span class="line">                # 设置虚拟机的CPU个数</span><br><span class="line">                v.cpus = 2</span><br><span class="line">            end</span><br><span class="line">        end</span><br><span class="line">        config.vm.provision &quot;shell&quot;, inline: &lt;&lt;-SCRIPT</span><br><span class="line">          &#123;</span><br><span class="line">          sudo mkdir -p /data</span><br><span class="line">          sudo mkfs.ext4 -F /dev/sdb</span><br><span class="line">          UUID=$(sudo blkid -s UUID /dev/sdb|awk -F&quot;:&quot; &#x27;&#123;print $2&#125;&#x27;| tr -d &#x27;&quot;&#x27;)</span><br><span class="line">          TYPE=$(sudo blkid  -s TYPE /dev/sdb|awk  -F&quot;=&quot; &#x27;&#123;print $NF&#125;&#x27;|tr -d &#x27;&quot;&#x27;)</span><br><span class="line">          echo -e &quot;$UUID\t/data\t$TYPE\tdefaults\t0 0&quot;|sudo tee -a /etc/fstab</span><br><span class="line">          sudo mount -a</span><br><span class="line">          &#125;</span><br><span class="line">        SCRIPT</span><br><span class="line">        # 执行初始化脚本</span><br><span class="line">        #config.vm.provision &quot;shell&quot;, path: &quot;bootstrap.sh&quot;</span><br><span class="line">   end</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vagrant status                                               </span><br><span class="line">Current machine states:</span><br><span class="line"></span><br><span class="line">node1                     running (virtualbox)</span><br><span class="line">node2                     running (virtualbox)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">vagrant ssh-config</span><br><span class="line">Host node1</span><br><span class="line">  HostName 127.0.0.1</span><br><span class="line">  User vagrant</span><br><span class="line">  Port 2222</span><br><span class="line">  UserKnownHostsFile /dev/null</span><br><span class="line">  StrictHostKeyChecking no</span><br><span class="line">  PasswordAuthentication no</span><br><span class="line">  IdentityFile /Users/dengyou/Vagrant_Pro/centos7-2009/.vagrant/machines/node1/virtualbox/private_key</span><br><span class="line">  IdentitiesOnly yes</span><br><span class="line">  LogLevel FATAL</span><br><span class="line"></span><br><span class="line">Host node2</span><br><span class="line">  HostName 127.0.0.1</span><br><span class="line">  User vagrant</span><br><span class="line">  Port 2200</span><br><span class="line">  UserKnownHostsFile /dev/null</span><br><span class="line">  StrictHostKeyChecking no</span><br><span class="line">  PasswordAuthentication no</span><br><span class="line">  IdentityFile /Users/dengyou/Vagrant_Pro/centos7-2009/.vagrant/machines/node2/virtualbox/private_key</span><br><span class="line">  IdentitiesOnly yes</span><br><span class="line">  LogLevel FATAL</span><br></pre></td></tr></table></figure>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -218,7 +279,7 @@
 		</ul>
 	</div>
 
-          
+      
 	<div class="article-category tagcloud">
 		<i class="icon-book icon"></i>
 		<ul class="article-tag-list">
@@ -231,360 +292,113 @@
 	</div>
 
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://example.com/2022/05/22/Vagrant-%E5%88%B6%E4%BD%9C%E8%87%AA%E5%B7%B1%E7%9A%84-Box-%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%95%9C%E5%83%8F/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/22/iTerm2-oh-my-zsh-%E6%89%93%E9%80%A0%E7%82%AB%E9%85%B7%E7%BB%88%E7%AB%AF/" class="archive-article-date">
-  	<time datetime="2022-05-21T17:23:26.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-22</time>
-</a>
+<nav id="article-nav">
+  
+    <a href="/2022/05/24/hello-world/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          Hello World
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2022/05/22/iTerm2-oh-my-zsh-%E6%89%93%E9%80%A0%E7%82%AB%E9%85%B7%E7%BB%88%E7%AB%AF/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">iTerm2 + oh-my-zsh 打造炫酷终端</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/22/iTerm2-oh-my-zsh-%E6%89%93%E9%80%A0%E7%82%AB%E9%85%B7%E7%BB%88%E7%AB%AF/">iTerm2 + oh-my-zsh 打造炫酷终端</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">mac</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/mac//" class="article-tag-list-link color4">mac</a>
-        		</li>
-      		
-		</ul>
-	</div>
+        
+        
+    </div>
+</aside>
 
 
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/21/Go-%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" class="archive-article-date">
-  	<time datetime="2022-05-21T14:31:22.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-21</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/21/Go-%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">Go 开发环境搭建</a>
-    </h1>
-  
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">go</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/go//" class="article-tag-list-link color3">go</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/16/Ansible-%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97/" class="archive-article-date">
-  	<time datetime="2022-05-15T16:34:48.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-16</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/16/Ansible-%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97/">Ansible 常用模块</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">ansible</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/ansible//" class="article-tag-list-link color3">ansible</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/11/NFS-%E4%BD%9C%E4%B8%BA-Kubernetes-%E7%9A%84%E5%8A%A8%E6%80%81%E5%AD%98%E5%82%A8%E7%B1%BB/" class="archive-article-date">
-  	<time datetime="2022-05-11T14:36:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-11</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/11/NFS-%E4%BD%9C%E4%B8%BA-Kubernetes-%E7%9A%84%E5%8A%A8%E6%80%81%E5%AD%98%E5%82%A8%E7%B1%BB/">NFS 作为 Kubernetes 的动态存储类</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">helm</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/helm//" class="article-tag-list-link color5">helm</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/11/DOCKER-%E4%BB%A3%E7%90%86%E9%85%8D%E7%BD%AE/" class="archive-article-date">
-  	<time datetime="2022-05-11T08:54:21.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-11</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/11/DOCKER-%E4%BB%A3%E7%90%86%E9%85%8D%E7%BD%AE/">DOCKER 代理配置</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">docker</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/docker//" class="article-tag-list-link color2">docker</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/11/%E5%9F%BA%E4%BA%8EKubeadm%E6%90%AD%E5%BB%BAKubernetes%E9%9B%86%E7%BE%A4/" class="archive-article-date">
-  	<time datetime="2022-05-11T08:14:20.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-11</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/11/%E5%9F%BA%E4%BA%8EKubeadm%E6%90%AD%E5%BB%BAKubernetes%E9%9B%86%E7%BE%A4/">基于Kubeadm搭建Kubernetes集群</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">kubeadm</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Kubeadm//" class="article-tag-list-link color3">Kubeadm</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-ubuntu">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/10/Ubuntu-Server-%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E9%85%8D%E7%BD%AE/" class="archive-article-date">
-  	<time datetime="2022-05-10T10:19:35.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-10</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/10/Ubuntu-Server-%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E9%85%8D%E7%BD%AE/">Ubuntu Server 系统基础</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/linux//" class="article-tag-list-link color1">linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
   
   
-    </div></section>
   
 
-    
+  
+
+  
+
+  
 
 
           </div>
@@ -607,8 +421,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,

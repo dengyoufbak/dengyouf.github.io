@@ -227,6 +227,1222 @@
 
 
   
+    <article id="post-Vagrant-制作自己的-Box-虚拟机镜像" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/05/22/Vagrant-%E5%88%B6%E4%BD%9C%E8%87%AA%E5%B7%B1%E7%9A%84-Box-%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%95%9C%E5%83%8F/">Vagrant 制作自己的 Box 虚拟机镜像</a>
+    </h1>
+  
+
+        
+        <a href="/2022/05/22/Vagrant-%E5%88%B6%E4%BD%9C%E8%87%AA%E5%B7%B1%E7%9A%84-Box-%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%95%9C%E5%83%8F/" class="archive-article-date">
+  	<time datetime="2022-05-22T08:23:19.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-22</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="系统环境介绍"><a href="#系统环境介绍" class="headerlink" title="系统环境介绍"></a>系统环境介绍</h2><ul>
+<li>Iso镜像: CentOS-7-x86_64-Minimal-2009.iso</li>
+<li>VirtualBox 版本: 6.1.34</li>
+<li>Vagrant 版本: 2.2.19</li>
+</ul>
+<h2 id="VirtualBox-新建虚拟机"><a href="#VirtualBox-新建虚拟机" class="headerlink" title="VirtualBox 新建虚拟机"></a>VirtualBox 新建虚拟机</h2><ul>
+<li>内存：2C&#x2F;4096G</li>
+<li>硬盘：<ul>
+<li>系统盘：50G</li>
+<li>数据盘：100G</li>
+</ul>
+</li>
+<li>声音、USB： 禁用</li>
+<li>网络： 网络地址转换（NAT)</li>
+<li>端口转发 -&gt; ssh 宿主机：127.0.0.1 2222 &#x3D;&gt; 虚拟机：（空） 22</li>
+</ul>
+<p><img src="/./pic/vagrant1.png"></p>
+<h2 id="配置账户"><a href="#配置账户" class="headerlink" title="配置账户"></a>配置账户</h2><ul>
+<li>设置 sshd 远程登录</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">sed -i &#x27;s/#UseDNS no/UseDNS no/g&#x27; /etc/ssh/sshd_config</span><br><span class="line">sed -i &#x27;s/#GSSAPIAuthentication no/GSSAPIAuthentication no/g&#x27; /etc/ssh/sshd_config</span><br><span class="line">sed -i &#x27;s@PasswordAuthentication no@PasswordAuthentication yes@g&#x27; /etc/ssh/sshd_config</span><br><span class="line">sed -i &#x27;s@#PermitRootLogin yes@PermitRootLogin yes@g&#x27; /etc/ssh/sshd_config</span><br><span class="line">systemctl reload sshd</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>vagrant sudo 免密登陆</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">useradd vagrant</span><br><span class="line">echo &quot;vagrant&quot;|passwd --stdin vagrant</span><br><span class="line">echo &quot;vagrant  ALL=(ALL)       NOPASSWD: ALL&quot; &gt;&gt; /etc/sudoers.d/vagrant</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>安装 Vagrant 密钥</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">su - vagrant</span><br><span class="line">mkdir .ssh &amp;&amp; chmod 0700 .ssh</span><br><span class="line">wget --no-check-certificate \</span><br><span class="line">    https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub \</span><br><span class="line">    -O /home/vagrant/.ssh/authorized_keys</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">chmod 0600 .ssh/authorized_keys</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置Yum源"><a href="#配置Yum源" class="headerlink" title="配置Yum源"></a>配置Yum源</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">mkdir /etc/yum.repos.d/bak</span><br><span class="line">mv /etc/yum.repos.d/*  /etc/yum.repos.d/bak</span><br><span class="line">curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo</span><br><span class="line">yum install epel-release</span><br><span class="line">&#125;</span><br><span class="line">&#123;</span><br><span class="line">yum clean all</span><br><span class="line">yum makecache</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装-VitualBox-additions"><a href="#安装-VitualBox-additions" class="headerlink" title="安装 VitualBox additions"></a>安装 VitualBox additions</h2><ul>
+<li>安装编译工具</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">yum -y groupinstall Development tools</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>安装软件包</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">yum -y install xorg-x11-drivers xorg-x11-utils</span><br><span class="line">yum install -y perl gcc dkms kernel-devel kernel-headers make bzip2</span><br><span class="line">yum install -y vim wget lrzsz net-tools</span><br><span class="line">reboot</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>加载 Guest Additions CD Image 镜像</li>
+</ul>
+<p><img src="/./pic/vagrant2.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">mkdir -p /tmp/cdrom &amp;&amp; mount /dev/cdrom /tmp/cdrom</span><br><span class="line">sh /tmp/cdrom/VBoxLinuxAdditions.run</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="清理缓存数据"><a href="#清理缓存数据" class="headerlink" title="清理缓存数据"></a>清理缓存数据</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum  clean all</span><br><span class="line">init 0</span><br></pre></td></tr></table></figure>
+
+<h2 id="虚拟机-打包为-vagrant-box"><a href="#虚拟机-打包为-vagrant-box" class="headerlink" title="虚拟机 打包为 vagrant box"></a>虚拟机 打包为 vagrant box</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mkdir centos7-2009 &amp;&amp; cd centos7-2009 </span><br><span class="line"># centos7 为虚拟机的名字</span><br><span class="line">vagrant package --output centos7-9.box --base centos7</span><br><span class="line">==&gt; centos7: Clearing any previously set forwarded ports...</span><br><span class="line">==&gt; centos7: Exporting VM...</span><br><span class="line">==&gt; centos7: Compressing package to: /Users/dengyou/Vagrant_Pro/centos7-2009/centos7-9.box</span><br></pre></td></tr></table></figure>
+
+<h2 id="测试启动虚拟机啊"><a href="#测试启动虚拟机啊" class="headerlink" title="测试启动虚拟机啊"></a>测试启动虚拟机啊</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vagrant box add dengyouf/CentOS-7.9 centos7-9.box</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"># -*- mode: ruby -*-</span><br><span class="line"># vi: set ft=ruby :</span><br><span class="line">Vagrant.configure(&quot;2&quot;) do |config|</span><br><span class="line">   (1..2).each do |i|</span><br><span class="line">        config.vm.define &quot;node#&#123;i&#125;&quot; do |node|</span><br><span class="line">            # 设置虚拟机的Box</span><br><span class="line">            node.vm.box = &quot;dengyouf/CentOS-7.9&quot;</span><br><span class="line"></span><br><span class="line">            # 设置虚拟机的主机名</span><br><span class="line">            node.vm.hostname=&quot;centos-node#&#123;i&#125;&quot;</span><br><span class="line"></span><br><span class="line">            # 设置虚拟机的IP</span><br><span class="line">            node.vm.network &quot;private_network&quot;, ip: &quot;192.168.56.#&#123;100+i&#125;&quot;</span><br><span class="line"></span><br><span class="line">            # 设置主机与虚拟机的共享目录</span><br><span class="line">            node.vm.synced_folder &quot;.&quot;, &quot;/home/vagrant/share&quot;</span><br><span class="line"></span><br><span class="line">            # VirtaulBox相关配置</span><br><span class="line">            node.vm.provider &quot;virtualbox&quot; do |v|</span><br><span class="line">                # 设置虚拟机的名称</span><br><span class="line">                v.name = &quot;centos-node#&#123;i&#125;&quot;</span><br><span class="line">                # 设置虚拟机的内存大小</span><br><span class="line">                v.memory = 4096</span><br><span class="line">                # 设置虚拟机的CPU个数</span><br><span class="line">                v.cpus = 2</span><br><span class="line">            end</span><br><span class="line">        end</span><br><span class="line">        config.vm.provision &quot;shell&quot;, inline: &lt;&lt;-SCRIPT</span><br><span class="line">          &#123;</span><br><span class="line">          sudo mkdir -p /data</span><br><span class="line">          sudo mkfs.ext4 -F /dev/sdb</span><br><span class="line">          UUID=$(sudo blkid -s UUID /dev/sdb|awk -F&quot;:&quot; &#x27;&#123;print $2&#125;&#x27;| tr -d &#x27;&quot;&#x27;)</span><br><span class="line">          TYPE=$(sudo blkid  -s TYPE /dev/sdb|awk  -F&quot;=&quot; &#x27;&#123;print $NF&#125;&#x27;|tr -d &#x27;&quot;&#x27;)</span><br><span class="line">          echo -e &quot;$UUID\t/data\t$TYPE\tdefaults\t0 0&quot;|sudo tee -a /etc/fstab</span><br><span class="line">          sudo mount -a</span><br><span class="line">          &#125;</span><br><span class="line">        SCRIPT</span><br><span class="line">        # 执行初始化脚本</span><br><span class="line">        #config.vm.provision &quot;shell&quot;, path: &quot;bootstrap.sh&quot;</span><br><span class="line">   end</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vagrant status                                               </span><br><span class="line">Current machine states:</span><br><span class="line"></span><br><span class="line">node1                     running (virtualbox)</span><br><span class="line">node2                     running (virtualbox)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">vagrant ssh-config</span><br><span class="line">Host node1</span><br><span class="line">  HostName 127.0.0.1</span><br><span class="line">  User vagrant</span><br><span class="line">  Port 2222</span><br><span class="line">  UserKnownHostsFile /dev/null</span><br><span class="line">  StrictHostKeyChecking no</span><br><span class="line">  PasswordAuthentication no</span><br><span class="line">  IdentityFile /Users/dengyou/Vagrant_Pro/centos7-2009/.vagrant/machines/node1/virtualbox/private_key</span><br><span class="line">  IdentitiesOnly yes</span><br><span class="line">  LogLevel FATAL</span><br><span class="line"></span><br><span class="line">Host node2</span><br><span class="line">  HostName 127.0.0.1</span><br><span class="line">  User vagrant</span><br><span class="line">  Port 2200</span><br><span class="line">  UserKnownHostsFile /dev/null</span><br><span class="line">  StrictHostKeyChecking no</span><br><span class="line">  PasswordAuthentication no</span><br><span class="line">  IdentityFile /Users/dengyou/Vagrant_Pro/centos7-2009/.vagrant/machines/node2/virtualbox/private_key</span><br><span class="line">  IdentitiesOnly yes</span><br><span class="line">  LogLevel FATAL</span><br></pre></td></tr></table></figure>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">vagrant</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/vagrant//" class="article-tag-list-link color3">vagrant</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/05/22/Vagrant-%E5%88%B6%E4%BD%9C%E8%87%AA%E5%B7%B1%E7%9A%84-Box-%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%95%9C%E5%83%8F/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-iTerm2-oh-my-zsh-打造炫酷终端" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/05/22/iTerm2-oh-my-zsh-%E6%89%93%E9%80%A0%E7%82%AB%E9%85%B7%E7%BB%88%E7%AB%AF/">iTerm2 + oh-my-zsh 打造炫酷终端</a>
+    </h1>
+  
+
+        
+        <a href="/2022/05/22/iTerm2-oh-my-zsh-%E6%89%93%E9%80%A0%E7%82%AB%E9%85%B7%E7%BB%88%E7%AB%AF/" class="archive-article-date">
+  	<time datetime="2022-05-21T17:23:26.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-22</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="安装软件包"><a href="#安装软件包" class="headerlink" title="安装软件包"></a>安装软件包</h2><ul>
+<li><p>安装 <a target="_blank" rel="noopener" href="http://iterm2.com/downloads.html">iTerm2</a></p>
+</li>
+<li><p>安装 <a target="_blank" rel="noopener" href="https://ohmyz.sh/">oh-my-zsh</a></p>
+</li>
+<li><p>修改默认 shell 为 zsh: <code>chsh -s /bin/zsh</code></p>
+</li>
+<li><p>修改<a target="_blank" rel="noopener" href="https://github.com/ohmyzsh/ohmyzsh/wiki/themes">默认主题</a>：</p>
+<ul>
+<li>cloud </li>
+<li>steeef</li>
+<li>agnosterzak</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vim ~/.zshrc</span><br><span class="line">ZSH_THEME=&quot;agnoster&quot;</span><br></pre></td></tr></table></figure>
+
+<h2 id="定制主题"><a href="#定制主题" class="headerlink" title="定制主题"></a>定制主题</h2><ul>
+<li>下载第三方主题 <a target="_blank" rel="noopener" href="https://github.com/bhilburn/powerlevel9k.git">powerlevel9k</a> 到 oh-my-zsh 放置第三方主题的目录中</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/bhilburn/powerlevel9k.git ~/.oh-my-zsh/custom/themes/powerlevel9k</span><br><span class="line">echo &quot;source $ZSH/custom/themes/powerlevel9k/powerlevel9k.zsh-theme&quot; &gt;&gt; ~/.zshrc</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>配置主题</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vim ~/.zshrc</span><br><span class="line">ZSH_THEME=&quot;powerlevel9k/powerlevel9k&quot;</span><br><span class="line">source ~/.zshrc</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>安装 <a target="_blank" rel="noopener" href="https://powerline.readthedocs.io/en/latest/installation.html">powerline</a> 插件</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip3 install powerline-status</span><br><span class="line">pip install powerline-status</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>安装<a target="_blank" rel="noopener" href="https://github.com/powerline/fonts.git">PowerFonts</a></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/powerline/fonts.git --depth=1</span><br><span class="line">cd fonts &amp;&amp; ./install.sh</span><br><span class="line">cd .. &amp;&amp; rm -rf fonts</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>设置 iTerm2 的字体</li>
+</ul>
+<p>具体的操作是 iTerm2 -&gt; Preferences -&gt; Profiles -&gt; Text，在 Font 区域选中 Change Font，选择字体名字带有 for powerline 的</p>
+<p><img src="/./pic/powerline.png"></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://iterm2colorschemes.com/">色彩预设</a></li>
+</ul>
+<p>选择 Preference -&gt; Profiles -&gt; Colors ，导入色彩主题，并勾上就可以</p>
+<ul>
+<li><code>schemes</code>: 放置色彩主题文件</li>
+<li><code>screenshots</code>:  色彩主题预设的预览图</li>
+</ul>
+<p><img src="/./pic/scheme.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/mbadolato/iTerm2-Color-Schemes ~/Downloads/itemcolor</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>命令补全插件<a target="_blank" rel="noopener" href="https://github.com/zsh-users/zsh-autosuggestions">zsh-autosuggestion</a></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">cd ~/.oh-my-zsh/custom/plugins/</span><br><span class="line">git clone https://github.com/zsh-users/zsh-autosuggestions</span><br><span class="line">vi ~/.zshrc</span><br><span class="line">plugins=(</span><br><span class="line">        zsh-autosuggestions</span><br><span class="line">        git</span><br><span class="line">)</span><br><span class="line">source ~/.zshrc</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>隐藏用户名和主机名</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;prompt_context() &#123;&#125;&quot; &gt;&gt; ~/.zshrc</span><br><span class="line">source ~/.zshrc</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>安装配色方案</p>
+<ul>
+<li>在打开的finder窗口中，双击Solarized Dark.itermcolors和Solarized Light.itermcolors即可安装明暗两种配色</li>
+<li>进入iTerm2 -&gt; Preferences -&gt; Profiles -&gt; Colors -&gt; Color Presets中根据个人喜好选择这两种配色中的一种即可以</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir ~/OpenSource &amp;&amp; cd ~/OpenSource</span><br><span class="line">git clone https://github.com/altercation/solarized</span><br><span class="line">cd solarized/iterm2-colors-solarized/</span><br><span class="line">open .</span><br></pre></td></tr></table></figure>
+
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">mac</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/mac//" class="article-tag-list-link color4">mac</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/05/22/iTerm2-oh-my-zsh-%E6%89%93%E9%80%A0%E7%82%AB%E9%85%B7%E7%BB%88%E7%AB%AF/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Go-开发环境搭建" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/05/21/Go-%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">Go 开发环境搭建</a>
+    </h1>
+  
+
+        
+        <a href="/2022/05/21/Go-%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" class="archive-article-date">
+  	<time datetime="2022-05-21T14:31:22.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-21</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="安装-Go"><a href="#安装-Go" class="headerlink" title="安装 Go"></a>安装 <a target="_blank" rel="noopener" href="https://golang.google.cn/dl/">Go</a></h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tar -xf go1.16.4.darwin-amd64.tar.gz -C ~/Applications/</span><br><span class="line"><span class="built_in">cat</span> ~/.zshrc</span><br><span class="line">GOROOT=/Users/dengyou/Applications/go</span><br><span class="line">PATH=<span class="variable">$GOROOT</span>/bin:<span class="variable">$GOPATH</span>/bin/:<span class="variable">$PATH</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">go version</span><br><span class="line">go version go1.16.4 darwin/amd64</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mkdir -pv /Users/dengyou/Desktop/GitHub/LearnGolang/goproject/&#123;src,bin,pkg&#125;</span><br><span class="line">go env -w GOPATH=&quot;/Users/dengyou/Desktop/GitHub/LearnGolang/goproject&quot;</span><br><span class="line">go env -w GOBIN=&quot;$GOPATH/bin&quot;</span><br><span class="line">go env -w GOPROXY=https://goproxy.cn</span><br><span class="line">go env -w GO111MODULE=&quot;auto&quot;</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装-VSCODE"><a href="#安装-VSCODE" class="headerlink" title="安装 VSCODE"></a>安装 VSCODE</h2><p><a target="_blank" rel="noopener" href="https://code.visualstudio.com/">vscode官网下载</a>最新版</p>
+<ul>
+<li><strong>安装 Go 语言扩展</strong></li>
+</ul>
+<p><img src="/./pic/go-extension.png"></p>
+<ul>
+<li><strong>安装 Go 语言扩展需要的工具集合</strong></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// 这些扩展很多被墙了, 需要配置GOPROXY代理才能正常安装:</span><br><span class="line">go env -w GOPROXY=https://goproxy.cn</span><br></pre></td></tr></table></figure>
+
+<p>设置变量过后为了保证vscode能正常使用, 请重启vscode</p>
+<ol>
+<li>打开命令面板: Shift + Command + P(mac) | Shift + Ctrl + P(windows)</li>
+<li>输入: Install&#x2F;Update 搜索 Go扩展依赖工具安装命令</li>
+</ol>
+<p><img src="/./pic/vscode-command.png"></p>
+<ol start="3">
+<li>勾选所有选项进行安装</li>
+</ol>
+<p><img src="/./pic/vscode-command2.png"></p>
+<p>如果失败也可以手动安装</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">go install -v golang.org/x/tools/gopls@latest</span><br><span class="line">go install -v honnef.co/go/tools/cmd/staticcheck@latest</span><br><span class="line">go install -v github.com/go-delve/delve/cmd/dlv@latest</span><br><span class="line">go install -v github.com/haya14busa/goplay/cmd/goplay@latest</span><br><span class="line">go install -v github.com/josharian/impl@latest</span><br><span class="line">go install -v github.com/fatih/gomodifytags@latest</span><br><span class="line">go install -v github.com/cweill/gotests/gotests@latest</span><br><span class="line">go install -v github.com/ramya-rao-a/go-outline@latest</span><br><span class="line">go install -v github.com/uudashr/gopkgs/v2/cmd/gopkgs@latest</span><br></pre></td></tr></table></figure>
+
+<h2 id="VSCODE-插件安装"><a href="#VSCODE-插件安装" class="headerlink" title="VSCODE 插件安装"></a>VSCODE 插件安装</h2><ul>
+<li>单词拼写检查: Code Spell Checker</li>
+<li>快捷运行代码的插件: Code Runner</li>
+<li>最好用Git工具没有之一: Gitlens</li>
+<li>AI 代码生成: Tabnine AI Code</li>
+<li>设计配色方案: GapStyle VS</li>
+</ul>
+<h2 id="配置vscode打印run-test详情内容"><a href="#配置vscode打印run-test详情内容" class="headerlink" title="配置vscode打印run test详情内容"></a>配置vscode打印run test详情内容</h2><p>通过修改 go.testFlags 的配置值为: [“-v”], 就开启了test 打印详细日志功能</p>
+<p><img src="/./pic/vscode-test-debug.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;workbench.colorTheme&quot;: &quot;One Dark Pro&quot;,</span><br><span class="line">    &quot;terminal.integrated.shell.windows&quot;: &quot;C:\\Program Files\\Git\\bin\\bash.exe&quot;,</span><br><span class="line">    &quot;go.useLanguageServer&quot;: true,</span><br><span class="line">    &quot;explorer.confirmDelete&quot;: false,</span><br><span class="line">    &quot;explorer.confirmDragAndDrop&quot;: false,</span><br><span class="line">    &quot;workbench.iconTheme&quot;: &quot;vscode-icons&quot;,</span><br><span class="line">    &quot;vsicons.dontShowNewVersionMessage&quot;: true,</span><br><span class="line">    &quot;http.proxySupport&quot;: &quot;off&quot;,</span><br><span class="line">    &quot;go.toolsManagement.autoUpdate&quot;: true,</span><br><span class="line">    &quot;terminal.integrated.tabs.enabled&quot;: true,</span><br><span class="line">    &quot;terminal.integrated.defaultProfile.windows&quot;: &quot;Git Bash&quot;,</span><br><span class="line">    &quot;git.autofetch&quot;: true,</span><br><span class="line">    &quot;files.autoSave&quot;: &quot;afterDelay&quot;,</span><br><span class="line">    &quot;go.testFlags&quot;: [&quot;-v&quot;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">go</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/go//" class="article-tag-list-link color3">go</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/05/21/Go-%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Ansible-常用模块" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/05/16/Ansible-%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97/">Ansible 常用模块</a>
+    </h1>
+  
+
+        
+        <a href="/2022/05/16/Ansible-%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97/" class="archive-article-date">
+  	<time datetime="2022-05-15T16:34:48.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-16</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Ansible 入门配置</p>
+<h2 id="实验环境"><a href="#实验环境" class="headerlink" title="实验环境"></a>实验环境</h2><p>本次实验使用三台 CentOS7.8 的机器，实验环境如下：</p>
+<table>
+<thead>
+<tr>
+<th>HOSTNAME</th>
+<th>IP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ansible</td>
+<td>192.168.0.11</td>
+</tr>
+<tr>
+<td>node-1</td>
+<td>192.168.0.12</td>
+</tr>
+<tr>
+<td>node-2</td>
+<td>192.168.0.13</td>
+</tr>
+</tbody></table>
+<h2 id="安装-Ansible"><a href="#安装-Ansible" class="headerlink" title="安装 Ansible"></a>安装 Ansible</h2><ul>
+<li>安装软件包</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">~]# yum install epel-release -y</span><br><span class="line">~]# yum install ansible -y</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>配置主机互信</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ssh-keygen  -t rsa</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">~]# yum install sshpass -y</span><br><span class="line"></span><br><span class="line">]# vim ssh-copy.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line">#</span><br><span class="line">IP=&quot;192.168.0.11</span><br><span class="line">192.168.0.12</span><br><span class="line">192.168.0.13&quot;</span><br><span class="line"></span><br><span class="line">for node in $&#123;IP&#125;;do</span><br><span class="line">  sshpass -p &quot;PASSWORD&quot; ssh-copy-id  $&#123;node&#125;  -o StrictHostKeyChecking=no</span><br><span class="line">  if [ $? -eq 0 ];then</span><br><span class="line">    echo -e &quot;\033[46;31m $&#123;node&#125; 秘钥copy成功 \033[0m&quot;</span><br><span class="line">  else</span><br><span class="line">     echo -e &quot;\033[43;31m $&#123;node&#125; 秘钥copy失败 \033[0m&quot;</span><br><span class="line">  fi</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+<h2 id="常用模块"><a href="#常用模块" class="headerlink" title="常用模块"></a>常用模块</h2><h3 id="主机清单"><a href="#主机清单" class="headerlink" title="主机清单"></a>主机清单</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">~]# cat /etc/ansible/hosts</span><br><span class="line">[ansible]</span><br><span class="line">192.168.0.11</span><br><span class="line"></span><br><span class="line">[node]</span><br><span class="line">192.168.0.12</span><br><span class="line">192.168.0.13</span><br></pre></td></tr></table></figure>
+
+<h3 id="ping-模块"><a href="#ping-模块" class="headerlink" title="ping 模块"></a>ping 模块</h3><ul>
+<li>探测主机存活性</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible all -m ping</span><br></pre></td></tr></table></figure>
+
+<h2 id="command-模块"><a href="#command-模块" class="headerlink" title="command 模块"></a>command 模块</h2><ul>
+<li>执行远程命令，不支持管道符重定向</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible all -m command -a &#x27;hostname&#x27;</span><br></pre></td></tr></table></figure>
+
+<h2 id="shell-模块"><a href="#shell-模块" class="headerlink" title="shell 模块"></a>shell 模块</h2><ul>
+<li>执行远程命令，支持管道符重定向</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible all -m shell -a &quot;echo &#x27;PASSWORD&#x27;|passwd --stdin root&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="hostname-模块"><a href="#hostname-模块" class="headerlink" title="hostname 模块"></a>hostname 模块</h3><ul>
+<li>用于修改主机名（不能修改&#x2F;etc&#x2F;hosts)</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible 192.168.0.11 -m hostname -a &quot;name=control-node&quot;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="file-模块"><a href="#file-模块" class="headerlink" title="file 模块"></a>file 模块</h3><ul>
+<li>用于对目标文件或文件夹相关的操作，主要用来设置文件、链接、目录的属性，或者移除文件、链接、目录等文件相关操作<ul>
+<li>path 文件绝对路径</li>
+<li>state	操作(touch文件新建、absent删除、link软连接、hard硬链接、directory目录创建)</li>
+<li>owner	设置所有者</li>
+<li>group	设置所属的组</li>
+<li>mode	权限 0000</li>
+<li>recurse	递归 yes or no</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible all -m file -a &quot;path=/tmp/testfile owner=root group=root mode=755 state=tqouch&quot; </span><br></pre></td></tr></table></figure>
+
+<h3 id="copy-模块"><a href="#copy-模块" class="headerlink" title="copy 模块"></a>copy 模块</h3><ul>
+<li>拷贝本地文件到远程机器<ul>
+<li>src			文件源路径</li>
+<li>dest		目标路径</li>
+<li>content	往目标文件输入内容</li>
+<li>force		是否强制覆盖 yes or no</li>
+<li>backup	是否备份有冲突的源文件[文件名相同，内容不同] yes or no</li>
+<li>checksum	拷贝完整性校验，使用sha1sum生成校验码</li>
+<li>owner		目标文件所有者</li>
+<li>group		目标文件所属组</li>
+<li>mode		目标文件权限 0000</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># /opt/data/ 带 &quot;/&quot; 表示copy data 目录下的所有到远程机器，不带&quot;/&quot; 表示copy data 目录 到 /mnt</span><br><span class="line">~]# ansible all -m copy -a &#x27;src=/opt/data/ dest=/mnt mode=0600&#x27;</span><br></pre></td></tr></table></figure>
+
+<h2 id="fetch-模块"><a href="#fetch-模块" class="headerlink" title="fetch 模块"></a>fetch 模块</h2><ul>
+<li>copy 远程机器的文件到本地，在管理机本地目录都会按照 “IP&#x2F;路径&#x2F;文件名” 的方式命名，防止冲突</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible all -m fetch -a &quot;src=/etc/fstab dest=/tmp&quot;</span><br><span class="line">~]# ls /tmp/192.168.0.1*</span><br><span class="line">/tmp/192.168.0.11:</span><br><span class="line">etc</span><br><span class="line"></span><br><span class="line">/tmp/192.168.0.12:</span><br><span class="line">etc</span><br><span class="line"></span><br><span class="line">/tmp/192.168.0.13:</span><br><span class="line">etc</span><br><span class="line">[root@control-node ~]# ls /tmp/192.168.0.1*/etc</span><br><span class="line">/tmp/192.168.0.11/etc:</span><br><span class="line">fstab</span><br><span class="line"></span><br><span class="line">/tmp/192.168.0.12/etc:</span><br><span class="line">fstab</span><br><span class="line"></span><br><span class="line">/tmp/192.168.0.13/etc:</span><br><span class="line">fstab</span><br></pre></td></tr></table></figure>
+
+<h3 id="user-模块"><a href="#user-模块" class="headerlink" title="user 模块"></a>user 模块</h3><ul>
+<li>管理用户账号和用户属性<ul>
+<li>name&#x3D;””	指定用户名</li>
+<li>password&#x3D;””	指定密码,必须是密文</li>
+<li>update_password&#x3D;””   更新用户密码</li>
+<li>state&#x3D; absent|present    删除|创建 默认为present</li>
+<li>system&#x3D; yes|no    是否为系统用户</li>
+<li>shell&#x3D;””    指定登陆shell</li>
+<li>generate_ssh_key&#x3D; yes|no  是否创建秘钥对</li>
+<li>uid&#x3D;	指定用户的uid</li>
+<li>append&#x3D; yes|no    用户是否追加到其他组</li>
+<li>group&#x3D;    用户属组</li>
+<li>groups&#x3D;	将现有用户加入到某个组，空值就会把该用户从所有所属组中删除</li>
+<li>create_home&#x3D; yes|no	是否建立家目录</li>
+<li>remove&#x3D; yes|no    删除家目录</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">~]# echo &quot;666666&quot; | openssl passwd -1 -stdin</span><br><span class="line">ansible node -m user -a &#x27;name=op_sys password=&quot;$1$NhaOU.GZ$NIke1Cnf5yp.0wgpauGut/&quot; state=present system=yes generate_ssh_key=yes&#x27;</span><br></pre></td></tr></table></figure>
+
+<h3 id="cron-模块"><a href="#cron-模块" class="headerlink" title="cron 模块"></a>cron 模块</h3><ul>
+<li>管理周期性时间任务</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible all -m cron -a &#x27;name=&quot; Time Sync by Aliyun cron&quot; job=&quot;ntpdate time1.aliyun.com&quot; minute=*/3 hour=* state=present&#x27;</span><br></pre></td></tr></table></figure>
+
+<h3 id="yum-模块"><a href="#yum-模块" class="headerlink" title="yum 模块"></a>yum 模块</h3><ul>
+<li>使用yum命令来管理软件包的安装与卸载</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible node -m yum -a &quot;list=repos&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="script-模块"><a href="#script-模块" class="headerlink" title="script 模块"></a>script 模块</h3><ul>
+<li>在远程主机执行本地脚本</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ansible all -m script -a &#x27;/data/local_scripts.sh&#x27;</span><br></pre></td></tr></table></figure>
+
+<h3 id="setup-模块"><a href="#setup-模块" class="headerlink" title="setup 模块"></a>setup 模块</h3><ul>
+<li>收集远程主机的基本信息（如操作系统类型,主机名,ip,cpu信息,内存信息等）<ul>
+<li>ansible_all_ipv4_addresses		显示ipv4的信息。</li>
+<li>ansible_devices								显示磁盘设备信息。</li>
+<li>ansible_distribution_major_version	显示是系统主版本。</li>
+<li>ansible_distribution_version	仅显示系统版本。</li>
+<li>ansible_machine								显示系统类型，例：32位，还是64位。</li>
+<li>ansible_lvm										显示lvm相关信息。</li>
+<li>ansible_memtotal_mb						显示系统总内存。</li>
+<li>ansible_memfree_mb						显示可用系统内存。</li>
+<li>ansible_memory_mb							详细显示内存情况。</li>
+<li>ansible_swaptotal_mb					显示总的swap内存。</li>
+<li>ansible_swapfree_mb						显示swap内存的可用内存。</li>
+<li>ansible_mounts								显示系统磁盘挂载情况。</li>
+<li>ansible_processor							显示cpu个数(具体显示每个cpu的型号)。</li>
+<li>ansible_processor_vcpus				显示cpu个数(只显示总的个数)。</li>
+<li>ansible_kernel								显示机器的内核信息</li>
+<li>ansible_hostname							显示主机名</li>
+<li>ansible_eth*									显示网卡信息</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible node -m setup  -a &quot;filter=&#x27;ansible_hostname&#x27;&quot;</span><br><span class="line">192.168.0.12 | SUCCESS =&gt; &#123;</span><br><span class="line">    &quot;ansible_facts&quot;: &#123;</span><br><span class="line">        &quot;ansible_hostname&quot;: &quot;node-1&quot;,</span><br><span class="line">        &quot;discovered_interpreter_python&quot;: &quot;/usr/bin/python&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;changed&quot;: false</span><br><span class="line">&#125;</span><br><span class="line">192.168.0.13 | SUCCESS =&gt; &#123;</span><br><span class="line">    &quot;ansible_facts&quot;: &#123;</span><br><span class="line">        &quot;ansible_hostname&quot;: &quot;node-2&quot;,</span><br><span class="line">        &quot;discovered_interpreter_python&quot;: &quot;/usr/bin/python&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;changed&quot;: false</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="archive-压缩模块"><a href="#archive-压缩模块" class="headerlink" title="archive 压缩模块"></a>archive 压缩模块</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible 192.168.0.11 -m archive -a &quot;path=/opt/data dest=/tmp/data.tar.gz format=gz&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="unarchive-解压缩模块"><a href="#unarchive-解压缩模块" class="headerlink" title="unarchive 解压缩模块"></a>unarchive 解压缩模块</h3><ul>
+<li>解压缩管理端的包到受控端</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible  node -m unarchive -a &quot;src=/tmp/data.tar.gz dest=/mnt &quot;</span><br></pre></td></tr></table></figure>
+
+
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">ansible</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/ansible//" class="article-tag-list-link color3">ansible</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/05/16/Ansible-%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-NFS-作为-Kubernetes-的动态存储类" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/05/11/NFS-%E4%BD%9C%E4%B8%BA-Kubernetes-%E7%9A%84%E5%8A%A8%E6%80%81%E5%AD%98%E5%82%A8%E7%B1%BB/">NFS 作为 Kubernetes 的动态存储类</a>
+    </h1>
+  
+
+        
+        <a href="/2022/05/11/NFS-%E4%BD%9C%E4%B8%BA-Kubernetes-%E7%9A%84%E5%8A%A8%E6%80%81%E5%AD%98%E5%82%A8%E7%B1%BB/" class="archive-article-date">
+  	<time datetime="2022-05-11T14:36:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-11</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="在-Ubuntu-上-安装配置-NFS-Server"><a href="#在-Ubuntu-上-安装配置-NFS-Server" class="headerlink" title="在 Ubuntu 上 安装配置 NFS Server"></a>在 Ubuntu 上 安装配置 NFS Server</h2><ul>
+<li>安装 NFS Server</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apt update</span><br><span class="line">apt install nfs-kernel-server</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>创建 NFS Export 目录</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p  /data/nfs_share/data</span><br><span class="line">chown -R nobody:nogroup /data/nfs_share/data</span><br><span class="line">chmod 777 /data/nfs_share/data</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>授予对客户端系统的 NFS 共享访问权限</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cat &gt;&gt; /etc/exports &lt;&lt; EOF</span><br><span class="line">/data/nfs_share/data 192.168.124.0/24(rw,sync,no_subtree_check)</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>导出共享目录</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">exportfs -a</span><br><span class="line">systemctl restart nfs-kernel-server &amp;&amp; systemctl enable nfs-kernel-server</span><br></pre></td></tr></table></figure>
+
+<h2 id="在客户端安装-NFS-Client"><a href="#在客户端安装-NFS-Client" class="headerlink" title="在客户端安装 NFS Client"></a>在客户端安装 NFS Client</h2><ul>
+<li>安装客户端</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apt update</span><br><span class="line">apt install nfs-common</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>验证</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mount -t nfs 192.168.124.28:/data/nfs_share/data /mnt</span><br><span class="line">touch  /mnt/$(hostname).file</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ls /data/nfs_share/data/</span><br><span class="line">kubeadm-master-01.file  kubeadm-node-01.file  kubeadm-node-02.file  kubeadm-node-03.file  Kubuntu.file</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">umount /mnt</span><br></pre></td></tr></table></figure>
+
+<h2 id="部署-NFS-Subdir-External-Provisioner-到集群"><a href="#部署-NFS-Subdir-External-Provisioner-到集群" class="headerlink" title="部署 NFS Subdir External Provisioner 到集群"></a>部署 NFS Subdir External Provisioner 到集群</h2><ul>
+<li>安装 NFS Subdir External Provisioner</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/</span><br><span class="line">helm repo update</span><br><span class="line">helm install nfs-subdir-external-provisioner \</span><br><span class="line">    nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \</span><br><span class="line">    --set nfs.server=192.168.124.28 \</span><br><span class="line">    --set nfs.path=/data/nfs_share/data</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>查看 storageClass 存储类</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kubectl  get sc</span><br><span class="line">NAME         PROVISIONER                                     RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE</span><br><span class="line">nfs-client   cluster.local/nfs-subdir-external-provisioner   Delete          Immediate           true                   114m</span><br></pre></td></tr></table></figure>
+
+<h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><ul>
+<li>创建 pvc</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">kubectl  apply -f test-claim.yaml </span><br><span class="line">---</span><br><span class="line">kind: PersistentVolumeClaim</span><br><span class="line">apiVersion: v1</span><br><span class="line">metadata:</span><br><span class="line">  name: test-claim</span><br><span class="line">  annotations:</span><br><span class="line">    volume.beta.kubernetes.io/storage-class: &quot;nfs-client&quot;</span><br><span class="line">spec:</span><br><span class="line">  accessModes:</span><br><span class="line">    - ReadWriteMany</span><br><span class="line">  resources:</span><br><span class="line">    requests:</span><br><span class="line">      storage: 1Mi</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>创建 Pod</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">kubectl  apply -f  test-pod.yaml</span><br><span class="line">---</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: Pod</span><br><span class="line">metadata:</span><br><span class="line">  name: test-pod</span><br><span class="line">spec:</span><br><span class="line">  containers:</span><br><span class="line">  - name: test-pod</span><br><span class="line">    image: busybox:1.24</span><br><span class="line">    command:</span><br><span class="line">      - &quot;/bin/sh&quot;</span><br><span class="line">    args:</span><br><span class="line">      - &quot;-c&quot;</span><br><span class="line">      - &quot;touch /mnt/SUCCESS &amp;&amp; exit 0 || exit 1&quot;</span><br><span class="line">    volumeMounts:</span><br><span class="line">      - name: nfs-pvc</span><br><span class="line">        mountPath: &quot;/mnt&quot;</span><br><span class="line">  restartPolicy: &quot;Never&quot;</span><br><span class="line">  volumes:</span><br><span class="line">    - name: nfs-pvc</span><br><span class="line">      persistentVolumeClaim:</span><br><span class="line">        claimName: test-claim</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>检查共享存储是否有文件生成</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls /data/nfs_share/data/default-test-claim-pvc-b2d4f582-075d-472a-ae92-36c81dd30636/SUCCESS</span><br></pre></td></tr></table></figure>
+
+
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">helm</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/helm//" class="article-tag-list-link color5">helm</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/05/11/NFS-%E4%BD%9C%E4%B8%BA-Kubernetes-%E7%9A%84%E5%8A%A8%E6%80%81%E5%AD%98%E5%82%A8%E7%B1%BB/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-DOCKER-代理配置" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/05/11/DOCKER-%E4%BB%A3%E7%90%86%E9%85%8D%E7%BD%AE/">DOCKER 代理配置</a>
+    </h1>
+  
+
+        
+        <a href="/2022/05/11/DOCKER-%E4%BB%A3%E7%90%86%E9%85%8D%E7%BD%AE/" class="archive-article-date">
+  	<time datetime="2022-05-11T08:54:21.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-11</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <ul>
+<li>创建目录</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir /etc/systemd/system/docker.service.d</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>创建代理文件</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cat &gt;&gt;  /etc/systemd/system/docker.service.d/http-proxy.conf &lt;&lt;EOF</span><br><span class="line">[Service]</span><br><span class="line">Environment=&quot;HTTP_PROXY=http://user:password@IP:8080/&quot;</span><br><span class="line">Environment=&quot;HTTPS_PROXY=https://user:password@IP:8080/&quot;</span><br><span class="line">Environment=&quot;NO_PROXY= hostname.example.com,172.10.10.10&quot;</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>重启服务</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl daemon-reload  &amp;&amp; systemctl restart docker</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>验证</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl show docker --property Environment</span><br></pre></td></tr></table></figure>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">docker</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/docker//" class="article-tag-list-link color2">docker</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/05/11/DOCKER-%E4%BB%A3%E7%90%86%E9%85%8D%E7%BD%AE/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-基于Kubeadm搭建Kubernetes集群" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/05/11/%E5%9F%BA%E4%BA%8EKubeadm%E6%90%AD%E5%BB%BAKubernetes%E9%9B%86%E7%BE%A4/">基于Kubeadm搭建Kubernetes集群</a>
+    </h1>
+  
+
+        
+        <a href="/2022/05/11/%E5%9F%BA%E4%BA%8EKubeadm%E6%90%AD%E5%BB%BAKubernetes%E9%9B%86%E7%BE%A4/" class="archive-article-date">
+  	<time datetime="2022-05-11T08:14:20.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-11</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="主机规划"><a href="#主机规划" class="headerlink" title="主机规划"></a>主机规划</h2><p>使用 kubeadm 初始化 kubernetes 集群，操作系统为 CentOS 7.6.1810 x86_64，用到的各相关程序版本如下：</p>
+<ul>
+<li>ubuntu: v18.04.6 LTS</li>
+<li>kubeadm: v1.22.6</li>
+<li>docker: v20.10.6</li>
+<li>flannel: v1.0.1</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>主机名</th>
+<th>IP 地址</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>kubeadm-master-01</td>
+<td>192.168.124.200</td>
+<td>8GB Ram, 2vcpus</td>
+</tr>
+<tr>
+<td>kubeadm-node-01</td>
+<td>192.168.124.211</td>
+<td>8GB Ram, 2vcpus</td>
+</tr>
+<tr>
+<td>kubeadm-node-02</td>
+<td>192.168.124.212</td>
+<td>8GB Ram, 2vcpus</td>
+</tr>
+<tr>
+<td>kubeadm-node-03</td>
+<td>192.168.124.212</td>
+<td>8GB Ram, 2vcpus</td>
+</tr>
+</tbody></table>
+<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><ul>
+<li>升级软件包</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apt update</span><br><span class="line">apt -y upgrade</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>主机名解析</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">cat &gt;&gt; /etc/hosts &lt;&lt;EOF</span><br><span class="line"></span><br><span class="line">192.168.124.200 kubeadm-master-01</span><br><span class="line">192.168.124.211 kubeadm-node-01</span><br><span class="line">192.168.124.212 kubeadm-node-02</span><br><span class="line">192.168.124.213 kubeadm-node-03</span><br><span class="line"></span><br><span class="line"># 用来扩展集群为高可用集群</span><br><span class="line">192.168.124.200 kubeadm-vip.linux.io</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>时间同步</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime</span><br><span class="line">ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime</span><br><span class="line"></span><br><span class="line">apt install ntpdate -y</span><br><span class="line">ntpdate time1.aliyun.com</span><br><span class="line">echo &quot;*/3 * * * * /usr/sbin/ntpdate time1.aliyun.com &amp;&gt; /dev/null&quot; &gt;&gt; /var/spool/cron/crontabs/root</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>关闭防火墙和 swap 分区</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ufw disable</span><br><span class="line">sed -i &#x27;s@^/swap@# &amp;1@g&#x27; /etc/fstab  &amp;&amp; swapoff  -a</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>调整内核参数</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">modprobe overlay &amp;&amp; modprobe br_netfilter</span><br><span class="line"></span><br><span class="line">cat &gt;&gt; /etc/sysctl.d/99-kubernetes-cri.conf &lt;&lt; EOF</span><br><span class="line">net.bridge.bridge-nf-call-iptables = 1</span><br><span class="line">net.ipv4.ip_forward = 1</span><br><span class="line">net.bridge.bridge-nf-call-ip6tables = 1</span><br><span class="line">user.max_user_namespaces=28633</span><br><span class="line">vm.swappiness=0</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">sysctl  --system</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>配置 ipvs 功能</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">apt install ipvsadm ipset -y</span><br><span class="line"></span><br><span class="line">modprobe ip_vs &amp;&amp; modprobe ip_vs_rr &amp;&amp; modprobe ip_vs_wrr &amp;&amp; modprobe ip_vs_sh</span><br><span class="line">cat &lt;&lt;EOF &gt;&gt; /etc/modules</span><br><span class="line">ip_vs_rr</span><br><span class="line">ip_vs_wrr</span><br><span class="line">ip_vs_sh</span><br><span class="line">ip_vs</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">reboot</span><br><span class="line"></span><br><span class="line">lsmod | grep -e ip_vs -e nf_conntrack_ipv4</span><br><span class="line">ip_vs_sh               16384  0</span><br><span class="line">ip_vs_wrr              16384  0</span><br><span class="line">ip_vs_rr               16384  0</span><br><span class="line">ip_vs                 151552  6 ip_vs_rr,ip_vs_sh,ip_vs_wrr</span><br><span class="line">nf_defrag_ipv6         20480  1 ip_vs</span><br><span class="line">nf_conntrack          135168  1 ip_vs</span><br><span class="line">libcrc32c              16384  4 nf_conntrack,xfs,raid456,ip_vs</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装容器运行时"><a href="#安装容器运行时" class="headerlink" title="安装容器运行时"></a>安装容器运行时</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">apt-get remove docker docker-engine docker.io</span><br><span class="line">apt-get install apt-transport-https ca-certificates curl gnupg2 software-properties-common</span><br><span class="line"></span><br><span class="line">curl -fsSL https://repo.huaweicloud.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -</span><br><span class="line"></span><br><span class="line">add-apt-repository &quot;deb [arch=amd64] https://repo.huaweicloud.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable&quot;</span><br><span class="line"></span><br><span class="line">apt update</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apt-cache madison docker-ce</span><br><span class="line">apt install docker-ce=5:20.10.6~3-0~ubuntu-bionic -y</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">mkdir /etc/docker</span><br><span class="line">cat &gt;&gt; /etc/docker/daemon.json &lt;&lt; EOF </span><br><span class="line">&#123;</span><br><span class="line">    &quot;registry-mirrors&quot;: [&quot;https://o4uba187.mirror.aliyuncs.com&quot;],</span><br><span class="line">    &quot;exec-opts&quot;: [&quot;native.cgroupdriver=systemd&quot;],</span><br><span class="line">    &quot;log-driver&quot;: &quot;json-file&quot;,</span><br><span class="line">    &quot;log-opts&quot;: &#123;</span><br><span class="line">    &quot;max-size&quot;: &quot;100m&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;storage-driver&quot;: &quot;overlay2&quot;,</span><br><span class="line">    &quot;graph&quot;:  &quot;/var/lib/docker&quot;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">systemctl  enable docker --now</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装-Kubeadm"><a href="#安装-Kubeadm" class="headerlink" title="安装 Kubeadm"></a>安装 Kubeadm</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">apt-get update &amp;&amp; apt-get install -y apt-transport-https</span><br><span class="line">curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add - </span><br><span class="line">cat &lt;&lt;EOF &gt;/etc/apt/sources.list.d/kubernetes.list</span><br><span class="line">deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">apt-get update </span><br><span class="line">apt-get install kubeadm=1.22.5-00 kubelet=1.22.5-00 kubectl=1.22.5-00 </span><br><span class="line">systemctl enable kubelet.service</span><br></pre></td></tr></table></figure>
+
+<h2 id="初始化-Master-节点"><a href="#初始化-Master-节点" class="headerlink" title="初始化 Master 节点"></a>初始化 Master 节点</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">kubeadm init --kubernetes-version=v1.22.5 \</span><br><span class="line">    --control-plane-endpoint=kubeadm-vip.linux.io \</span><br><span class="line">    --apiserver-advertise-address=0.0.0.0 \</span><br><span class="line">    --pod-network-cidr=10.244.0.0/16   \</span><br><span class="line">    --service-cidr=10.96.0.0/12 \</span><br><span class="line">    --image-repository=registry.cn-hangzhou.aliyuncs.com/google_containers \</span><br><span class="line">    --ignore-preflight-errors=Swap | tee kubeadm-init.log</span><br><span class="line"></span><br><span class="line">Your Kubernetes control-plane has initialized successfully!</span><br><span class="line"></span><br><span class="line">To start using your cluster, you need to run the following as a regular user:</span><br><span class="line"></span><br><span class="line">  mkdir -p $HOME/.kube</span><br><span class="line">  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config</span><br><span class="line">  sudo chown $(id -u):$(id -g) $HOME/.kube/config</span><br><span class="line"></span><br><span class="line">Alternatively, if you are the root user, you can run:</span><br><span class="line"></span><br><span class="line">  export KUBECONFIG=/etc/kubernetes/admin.conf</span><br><span class="line"></span><br><span class="line">You should now deploy a pod network to the cluster.</span><br><span class="line">Run &quot;kubectl apply -f [podnetwork].yaml&quot; with one of the options listed at:</span><br><span class="line">  https://kubernetes.io/docs/concepts/cluster-administration/addons/</span><br><span class="line"></span><br><span class="line">You can now join any number of control-plane nodes by copying certificate authorities</span><br><span class="line">and service account keys on each node and then running the following as root:</span><br><span class="line"></span><br><span class="line">  kubeadm join kubeadm-vip.linux.io:6443 --token pa5fyb.mcoy474qbznp8cvd \</span><br><span class="line">	--discovery-token-ca-cert-hash sha256:5c1deff287d32725b8c3eaab49a32afc4f046ff1514056b15f11535c1fb45df5 \</span><br><span class="line">	--control-plane</span><br><span class="line"></span><br><span class="line">Then you can join any number of worker nodes by running the following on each as root:</span><br><span class="line"></span><br><span class="line">kubeadm join kubeadm-vip.linux.io:6443 --token pa5fyb.mcoy474qbznp8cvd \</span><br><span class="line">	--discovery-token-ca-cert-hash sha256:5c1deff287d32725b8c3eaab49a32afc4f046ff1514056b15f11535c1fb45df5</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p $HOME/.kube</span><br><span class="line">sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config</span><br><span class="line">sudo chown $(id -u):$(id -g) $HOME/.kube/config</span><br></pre></td></tr></table></figure>
+
+<h2 id="部署-Flannel"><a href="#部署-Flannel" class="headerlink" title="部署 Flannel"></a>部署 Flannel</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Join-worker-节点"><a href="#Join-worker-节点" class="headerlink" title="Join worker 节点"></a>Join worker 节点</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubeadm join kubeadm-vip.linux.io:6443 --token pa5fyb.mcoy474qbznp8cvd \</span><br><span class="line">	--discovery-token-ca-cert-hash sha256:5c1deff287d32725b8c3eaab49a32afc4f046ff1514056b15f11535c1fb45df5</span><br></pre></td></tr></table></figure>
+
+<h2 id="启用-IPVS-模式"><a href="#启用-IPVS-模式" class="headerlink" title="启用 IPVS 模式"></a>启用 IPVS 模式</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kubectl  edit cm kube-proxy -n kube-system</span><br><span class="line">    mode: &quot;ipvs&quot; </span><br><span class="line"></span><br><span class="line">kubectl  delete pod -n kube-system -l k8s-app=kube-proxy</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">ipvsadm -Ln</span><br><span class="line">IP Virtual Server version 1.2.1 (size=4096)</span><br><span class="line">Prot LocalAddress:Port Scheduler Flags</span><br><span class="line">  -&gt; RemoteAddress:Port           Forward Weight ActiveConn InActConn</span><br><span class="line">TCP  10.96.0.1:443 rr</span><br><span class="line">  -&gt; 192.168.124.200:6443         Masq    1      0          0</span><br><span class="line">TCP  10.96.0.10:53 rr</span><br><span class="line">  -&gt; 10.244.0.2:53                Masq    1      0          0</span><br><span class="line">  -&gt; 10.244.0.3:53                Masq    1      0          0</span><br><span class="line">TCP  10.96.0.10:9153 rr</span><br><span class="line">  -&gt; 10.244.0.2:9153              Masq    1      0          0</span><br><span class="line">  -&gt; 10.244.0.3:9153              Masq    1      0          0</span><br><span class="line">UDP  10.96.0.10:53 rr</span><br><span class="line">  -&gt; 10.244.0.2:53                Masq    1      0          0</span><br><span class="line">  -&gt; 10.244.0.3:53                Masq    1      0          0</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="验证集群"><a href="#验证集群" class="headerlink" title="验证集群"></a>验证集群</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl  create deployment myapp --image=ikubernetes/myapp:v1 --replicas=3</span><br><span class="line">kubectl  expose deployment  myapp  --port=80 --target-port=80</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">kubectl  get pod -o wide &amp;&amp; kubectl get svc</span><br><span class="line">NAME                    READY   STATUS    RESTARTS   AGE   IP           NODE              NOMINATED NODE   READINESS GATES</span><br><span class="line">myapp-7d4b7b84b-98cx7   1/1     Running   0          83s   10.244.3.3   kubeadm-node-03   &lt;none&gt;           &lt;none&gt;</span><br><span class="line">myapp-7d4b7b84b-pfkqq   1/1     Running   0          83s   10.244.2.3   kubeadm-node-02   &lt;none&gt;           &lt;none&gt;</span><br><span class="line">myapp-7d4b7b84b-zg5dc   1/1     Running   0          83s   10.244.1.4   kubeadm-node-01   &lt;none&gt;           &lt;none&gt;</span><br><span class="line">NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE</span><br><span class="line">kubernetes   ClusterIP   10.96.0.1      &lt;none&gt;        443/TCP   60m</span><br><span class="line">myapp        ClusterIP   10.101.62.58   &lt;none&gt;        80/TCP    2m40s</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">kubectl  exec -it myapp-7d4b7b84b-98cx7 -- wget -O  - 10.244.1.4</span><br><span class="line">Connecting to 10.244.1.4 (10.244.1.4:80)</span><br><span class="line">Hello MyApp | Version: v1 | &lt;a href=&quot;hostname.html&quot;&gt;Pod Name&lt;/a&gt;</span><br><span class="line"></span><br><span class="line">kubectl  exec -it myapp-7d4b7b84b-98cx7 -- ping 192.168.124.212</span><br><span class="line"></span><br><span class="line"> kubectl  exec -it myapp-7d4b7b84b-98cx7 -- nslookup myapp</span><br><span class="line">nslookup: can&#x27;t resolve &#x27;(null)&#x27;: Name does not resolve</span><br><span class="line"></span><br><span class="line">Name:      myapp</span><br><span class="line">Address 1: 10.101.62.58 myapp.default.svc.cluster.local</span><br></pre></td></tr></table></figure>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">kubeadm</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/Kubeadm//" class="article-tag-list-link color3">Kubeadm</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/05/11/%E5%9F%BA%E4%BA%8EKubeadm%E6%90%AD%E5%BB%BAKubernetes%E9%9B%86%E7%BE%A4/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="ubuntu-Ubuntu-Server-系统基础配置" class="article article-type-ubuntu  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/05/10/Ubuntu-Server-%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E9%85%8D%E7%BD%AE/">Ubuntu Server 系统基础</a>
+    </h1>
+  
+
+        
+        <a href="/2022/05/10/Ubuntu-Server-%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E9%85%8D%E7%BD%AE/" class="archive-article-date">
+  	<time datetime="2022-05-10T10:19:35.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-10</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Ubuntu-Server-系统环境基础配置"><a href="#Ubuntu-Server-系统环境基础配置" class="headerlink" title="Ubuntu Server 系统环境基础配置"></a>Ubuntu Server 系统环境基础配置</h1><h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><ul>
+<li>安装传参,修改网卡名字为 ethX： <code>net.ifnames=0 biosdevname=0</code></li>
+</ul>
+<h2 id="配置-Root-远程登录"><a href="#配置-Root-远程登录" class="headerlink" title="配置 Root 远程登录"></a>配置 Root 远程登录</h2><ul>
+<li><p>查看系统版本：<code>cat /proc/version</code></p>
+</li>
+<li><p>修改sshd配置文件</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">~$ sudo vim /etc/ssh/sshd_config</span><br><span class="line"></span><br><span class="line">#PermitRootLogin prohibit-password #默认为禁⽌登录</span><br><span class="line">PermitRootLogin yes #改为允许登录</span><br><span class="line">PasswordAuthentication yes #打开密码认证，默认就是允许通过密码认证登录</span><br><span class="line">UseDNS no</span><br><span class="line"></span><br><span class="line">~$ sudo systemctl  restart sshd</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>添加 root 密码</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo root:ROOTPASS| chpasswd</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="网络配置"><a href="#网络配置" class="headerlink" title="网络配置"></a>网络配置</h2><p>Ubuntu 从 17.10 开始，已放弃在 &#x2F;etc&#x2F;network&#x2F;interfaces ⾥固定IP的配置，⽽是改成 netplan ⽅式，<br>配置⽂件是：&#x2F;etc&#x2F;netplan&#x2F;*.yaml</p>
+<ul>
+<li>ubuntu 18.04配置静态IP地址</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"> cat /etc/netplan/00-installer-config.yaml</span><br><span class="line"># This is the network config written by &#x27;subiquity&#x27;</span><br><span class="line">network:</span><br><span class="line">  version: 2</span><br><span class="line">  renderer: networkd</span><br><span class="line">  ethernets:</span><br><span class="line">    eth0:</span><br><span class="line">      dhcp4: no</span><br><span class="line">      addresses:</span><br><span class="line">        - 192.168.124.28/24</span><br><span class="line">      gateway4: 192.168.124.1</span><br><span class="line">      nameservers:</span><br><span class="line">          addresses: [223.5.5.5,114.114.114.114]</span><br><span class="line">        </span><br><span class="line"> netplan apply</span><br></pre></td></tr></table></figure>
+
+<h2 id="软件包管理"><a href="#软件包管理" class="headerlink" title="软件包管理"></a>软件包管理</h2><ul>
+<li><p>阿⾥云仓库地址：<a target="_blank" rel="noopener" href="https://opsx.alibaba.com/mirror">https://opsx.alibaba.com/mirror</a></p>
+</li>
+<li><p>中科⼤：<a target="_blank" rel="noopener" href="http://mirrors.ustc.edu.cn/help/ubuntu.html">http://mirrors.ustc.edu.cn/help/ubuntu.html</a></p>
+</li>
+<li><p>清华⼤学：<a target="_blank" rel="noopener" href="https://mirror.tuna.tsinghua.edu.cn/help/ubuntu/">https://mirror.tuna.tsinghua.edu.cn/help/ubuntu/</a></p>
+</li>
+<li><p>华为：<a target="_blank" rel="noopener" href="https://mirrors.huaweicloud.com/">https://mirrors.huaweicloud.com/</a></p>
+</li>
+<li><p>ubuntu 18.04(bionic) 配置如下</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"> mv  /etc/apt/sources.list&#123;,.bak&#125;</span><br><span class="line">cat &gt;  /etc/apt/sources.list &lt;&lt;EOF</span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse</span><br><span class="line"></span><br><span class="line"># deb http://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse</span><br><span class="line"># deb-src http://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> apt update</span><br><span class="line"> apt upgrad</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>dpkg安装包管理</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># apt list #apt列出仓库软件包，等于yum list</span><br><span class="line"># apt search NAME #搜索安装包</span><br><span class="line"># apt show apache2 #查看某个安装包的详细信息</span><br><span class="line"># apt install apache2 #在线安装软件包</span><br><span class="line"># apt remove apache2 #卸载单个软件包但是保留配置⽂件</span><br><span class="line"># apt autoremove apache2 #删除安装包并解决依赖关系</span><br><span class="line"># apt update #更新本地软件包列表索引，修改了apt仓库后必须执⾏</span><br><span class="line"># apt purge apache2 #卸载单个软件包删除配置⽂件</span><br><span class="line"># apt upgrade #升级所有已安装且可升级到新版本的软件包</span><br><span class="line"># apt full-upgrade #升级整个系统，必要时可以移除旧软件包。</span><br><span class="line"># apt edit-sources #编辑source源⽂件</span><br><span class="line"># apt-cache madison nginx #查看仓库中软件包有哪些版本可以安装</span><br><span class="line"># apt install nginx=1.14.0-0ubuntu1.6 #安装软件包的时候指定安装具体的版本</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># dpkg -i gitlab-ce_11.9.8-ce.0_amd64.deb #安装某个软件包</span><br><span class="line"># dpkg -r gitlab-ce #删除某个软件包保留配置⽂件</span><br><span class="line"># dpkg -r -P gitlab-ce #删除某个软件包不保留配置⽂件</span><br><span class="line"># dpkg -I gitlab-ce_11.9.8-ce.0_amd64.deb #查看软件包信息</span><br><span class="line"># dpkg -c gitlab-ce_11.9.8-ce.0_amd64.deb #查看软件包内的⽂件及⽬录内容</span><br><span class="line"># dpkg -l #列出本机已经安装的所有软件</span><br></pre></td></tr></table></figure>
+<h2 id="系统资源限制优化"><a href="#系统资源限制优化" class="headerlink" title="系统资源限制优化"></a>系统资源限制优化</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">cat  &gt;&gt; /etc/security/limits.conf &lt;&lt;EOF</span><br><span class="line">#root账户的资源软限制和硬限制</span><br><span class="line">root soft core unlimited</span><br><span class="line">root hard core unlimited</span><br><span class="line">root soft nproc 1000000</span><br><span class="line">root hard nproc 1000000</span><br><span class="line">root soft nofile 1000000</span><br><span class="line">root hard nofile 1000000</span><br><span class="line">root soft memlock 32000</span><br><span class="line">root hard memlock 32000</span><br><span class="line">root soft msgqueue 8192000</span><br><span class="line">root hard msgqueue 8192000</span><br><span class="line">#其他账户的资源软限制和硬限制</span><br><span class="line">* soft core unlimited</span><br><span class="line">* hard core unlimited</span><br><span class="line">* soft nproc 1000000</span><br><span class="line">* hard nproc 1000000</span><br><span class="line">* soft nofile 1000000</span><br><span class="line">* hard nofile 1000000</span><br><span class="line">* soft memlock 32000</span><br><span class="line">* hard memlock 32000</span><br><span class="line">* soft msgqueue 8192000</span><br><span class="line">* hard msgqueue 8192000</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">:~# ulimit  -SHn 65535</span><br></pre></td></tr></table></figure>
+
+<h2 id="内核参数优化"><a href="#内核参数优化" class="headerlink" title="内核参数优化"></a>内核参数优化</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">cat /etc/sysct</span><br><span class="line"></span><br><span class="line"># Controls source route verification</span><br><span class="line">net.ipv4.conf.default.rp_filter = 1</span><br><span class="line">net.ipv4.ip_nonlocal_bind = 1</span><br><span class="line">net.ipv4.ip_forward = 1</span><br><span class="line"></span><br><span class="line"># Do not accept source routing</span><br><span class="line">net.ipv4.conf.default.accept_source_route = 0</span><br><span class="line"></span><br><span class="line"># Controls the System Request debugging functionality of the kernel</span><br><span class="line">kernel.sysrq = 0</span><br><span class="line"></span><br><span class="line"># Controls whether core dumps will append the PID to the core filename.</span><br><span class="line"># Useful for debugging multi-threaded applications.</span><br><span class="line">kernel.core_uses_pid = 1</span><br><span class="line"></span><br><span class="line"># Controls the use of TCP syncookies</span><br><span class="line">net.ipv4.tcp_syncookies = 1</span><br><span class="line"></span><br><span class="line"># Disable netfilter on bridges.</span><br><span class="line">net.bridge.bridge-nf-call-ip6tables = 0</span><br><span class="line">net.bridge.bridge-nf-call-iptables = 0</span><br><span class="line">net.bridge.bridge-nf-call-arptables = 0</span><br><span class="line"></span><br><span class="line"># Controls the default maxmimum size of a mesage queue</span><br><span class="line">kernel.msgmnb = 65536</span><br><span class="line"></span><br><span class="line"># # Controls the maximum size of a message, in bytes</span><br><span class="line">kernel.msgmax = 65536</span><br><span class="line"></span><br><span class="line"># Controls the maximum shared segment size, in bytes</span><br><span class="line">kernel.shmmax = 68719476736</span><br><span class="line"></span><br><span class="line"># # Controls the maximum number of shared memory segments, in pages</span><br><span class="line">kernel.shmall = 4294967296</span><br><span class="line"></span><br><span class="line"># TCP kernel paramater</span><br><span class="line">net.ipv4.tcp_mem = 786432 1048576 1572864</span><br><span class="line">net.ipv4.tcp_rmem = 4096 87380 4194304</span><br><span class="line">net.ipv4.tcp_wmem = 4096 16384 4194304</span><br><span class="line">net.ipv4.tcp_window_scaling = 1</span><br><span class="line">net.ipv4.tcp_sack = 1</span><br><span class="line"></span><br><span class="line"># socket buffer</span><br><span class="line">net.core.wmem_default = 8388608</span><br><span class="line">net.core.rmem_default = 8388608</span><br><span class="line">net.core.rmem_max = 16777216</span><br><span class="line">net.core.wmem_max = 16777216</span><br><span class="line">net.core.netdev_max_backlog = 262144</span><br><span class="line">net.core.somaxconn = 20480</span><br><span class="line">net.core.optmem_max = 81920</span><br><span class="line"></span><br><span class="line"># TCP conn</span><br><span class="line">net.ipv4.tcp_max_syn_backlog = 262144</span><br><span class="line">net.ipv4.tcp_syn_retries = 3</span><br><span class="line">net.ipv4.tcp_retries1 = 3</span><br><span class="line">net.ipv4.tcp_retries2 = 15</span><br><span class="line"></span><br><span class="line"># tcp conn reuse</span><br><span class="line">net.ipv4.tcp_timestamps = 0</span><br><span class="line">net.ipv4.tcp_tw_reuse = 0</span><br><span class="line">net.ipv4.tcp_tw_recycle = 0</span><br><span class="line">net.ipv4.tcp_fin_timeout = 1</span><br><span class="line">net.ipv4.tcp_max_tw_buckets = 20000</span><br><span class="line">net.ipv4.tcp_max_orphans = 3276800</span><br><span class="line">net.ipv4.tcp_synack_retries = 1</span><br><span class="line">net.ipv4.tcp_syncookies = 1</span><br><span class="line"></span><br><span class="line"># keepalive conn</span><br><span class="line">net.ipv4.tcp_keepalive_time = 300</span><br><span class="line">net.ipv4.tcp_keepalive_intvl = 30</span><br><span class="line">net.ipv4.tcp_keepalive_probes = 3</span><br><span class="line">net.ipv4.ip_local_port_range = 10001 65000</span><br><span class="line"></span><br><span class="line"># swap</span><br><span class="line">vm.overcommit_memory = 0</span><br><span class="line">vm.swappiness = 10</span><br><span class="line">#net.ipv4.conf.eth1.rp_filter = 0</span><br><span class="line">#net.ipv4.conf.lo.arp_ignore = 1</span><br><span class="line">#net.ipv4.conf.lo.arp_announce = 2</span><br><span class="line">#net.ipv4.conf.all.arp_ignore = 1</span><br><span class="line">#net.ipv4.conf.all.arp_announce = 2</span><br></pre></td></tr></table></figure>
+
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/linux//" class="article-tag-list-link color1">linux</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/05/10/Ubuntu-Server-%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E9%85%8D%E7%BD%AE/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
   
 
 
@@ -318,6 +1534,38 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
             <input type="checkbox" q-on="click:toggleTag(e)" q-attr="checked:showTags">
           </label>
           <ul class="article-tag-list" q-show="showTags">
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">ansible</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">go</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">helm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">linux</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">mac</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">kubeadm</a>
+              </li>
             
             <div class="clearfix"></div>
           </ul>

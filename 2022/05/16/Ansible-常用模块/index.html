@@ -6,14 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://example.com">
-  <title>Archives: 2022/5 | Hexo</title>
+  <title>Ansible 常用模块 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://example.com/archives/2022/05/index.html">
+  <meta name="description" content="Ansible 入门配置 实验环境本次实验使用三台 CentOS7.8 的机器，实验环境如下：    HOSTNAME IP    ansible 192.168.0.11   node-1 192.168.0.12   node-2 192.168.0.13   安装 Ansible 安装软件包  12~]# yum install epel-release -y~]# yum install">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ansible 常用模块">
+<meta property="og:url" content="http://example.com/2022/05/16/Ansible-%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Ansible 入门配置 实验环境本次实验使用三台 CentOS7.8 的机器，实验环境如下：    HOSTNAME IP    ansible 192.168.0.11   node-1 192.168.0.12   node-2 192.168.0.13   安装 Ansible 安装软件包  12~]# yum install epel-release -y~]# yum install">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-05-15T16:34:48.000Z">
+<meta property="article:modified_time" content="2022-05-24T10:00:40.846Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="ansible">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
@@ -150,210 +155,212 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-Ansible-常用模块" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2022" class="archive-year">2022</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/24/hello-world/" class="archive-article-date">
-  	<time datetime="2022-05-24T09:38:43.555Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-24</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/24/hello-world/">Hello World</a>
+    <h1 class="article-title" itemprop="name">
+      Ansible 常用模块
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/22/Vagrant-%E5%88%B6%E4%BD%9C%E8%87%AA%E5%B7%B1%E7%9A%84-Box-%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%95%9C%E5%83%8F/" class="archive-article-date">
-  	<time datetime="2022-05-22T08:23:19.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-22</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/22/Vagrant-%E5%88%B6%E4%BD%9C%E8%87%AA%E5%B7%B1%E7%9A%84-Box-%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%95%9C%E5%83%8F/">Vagrant 制作自己的 Box 虚拟机镜像</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">vagrant</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/vagrant//" class="article-tag-list-link color3">vagrant</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/22/iTerm2-oh-my-zsh-%E6%89%93%E9%80%A0%E7%82%AB%E9%85%B7%E7%BB%88%E7%AB%AF/" class="archive-article-date">
-  	<time datetime="2022-05-21T17:23:26.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-22</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/22/iTerm2-oh-my-zsh-%E6%89%93%E9%80%A0%E7%82%AB%E9%85%B7%E7%BB%88%E7%AB%AF/">iTerm2 + oh-my-zsh 打造炫酷终端</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">mac</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/mac//" class="article-tag-list-link color4">mac</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/21/Go-%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" class="archive-article-date">
-  	<time datetime="2022-05-21T14:31:22.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-21</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/21/Go-%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">Go 开发环境搭建</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">go</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/go//" class="article-tag-list-link color3">go</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/16/Ansible-%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97/" class="archive-article-date">
+        
+        <a href="/2022/05/16/Ansible-%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97/" class="archive-article-date">
   	<time datetime="2022-05-15T16:34:48.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-16</time>
 </a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/16/Ansible-%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97/">Ansible 常用模块</a>
-    </h1>
-  
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Ansible 入门配置</p>
+<h2 id="实验环境"><a href="#实验环境" class="headerlink" title="实验环境"></a>实验环境</h2><p>本次实验使用三台 CentOS7.8 的机器，实验环境如下：</p>
+<table>
+<thead>
+<tr>
+<th>HOSTNAME</th>
+<th>IP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ansible</td>
+<td>192.168.0.11</td>
+</tr>
+<tr>
+<td>node-1</td>
+<td>192.168.0.12</td>
+</tr>
+<tr>
+<td>node-2</td>
+<td>192.168.0.13</td>
+</tr>
+</tbody></table>
+<h2 id="安装-Ansible"><a href="#安装-Ansible" class="headerlink" title="安装 Ansible"></a>安装 Ansible</h2><ul>
+<li>安装软件包</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">~]# yum install epel-release -y</span><br><span class="line">~]# yum install ansible -y</span><br></pre></td></tr></table></figure>
 
-        <div class="article-info info-on-right">
-          
+<ul>
+<li>配置主机互信</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ssh-keygen  -t rsa</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">~]# yum install sshpass -y</span><br><span class="line"></span><br><span class="line">]# vim ssh-copy.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line">#</span><br><span class="line">IP=&quot;192.168.0.11</span><br><span class="line">192.168.0.12</span><br><span class="line">192.168.0.13&quot;</span><br><span class="line"></span><br><span class="line">for node in $&#123;IP&#125;;do</span><br><span class="line">  sshpass -p &quot;PASSWORD&quot; ssh-copy-id  $&#123;node&#125;  -o StrictHostKeyChecking=no</span><br><span class="line">  if [ $? -eq 0 ];then</span><br><span class="line">    echo -e &quot;\033[46;31m $&#123;node&#125; 秘钥copy成功 \033[0m&quot;</span><br><span class="line">  else</span><br><span class="line">     echo -e &quot;\033[43;31m $&#123;node&#125; 秘钥copy失败 \033[0m&quot;</span><br><span class="line">  fi</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+<h2 id="常用模块"><a href="#常用模块" class="headerlink" title="常用模块"></a>常用模块</h2><h3 id="主机清单"><a href="#主机清单" class="headerlink" title="主机清单"></a>主机清单</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">~]# cat /etc/ansible/hosts</span><br><span class="line">[ansible]</span><br><span class="line">192.168.0.11</span><br><span class="line"></span><br><span class="line">[node]</span><br><span class="line">192.168.0.12</span><br><span class="line">192.168.0.13</span><br></pre></td></tr></table></figure>
+
+<h3 id="ping-模块"><a href="#ping-模块" class="headerlink" title="ping 模块"></a>ping 模块</h3><ul>
+<li>探测主机存活性</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible all -m ping</span><br></pre></td></tr></table></figure>
+
+<h2 id="command-模块"><a href="#command-模块" class="headerlink" title="command 模块"></a>command 模块</h2><ul>
+<li>执行远程命令，不支持管道符重定向</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible all -m command -a &#x27;hostname&#x27;</span><br></pre></td></tr></table></figure>
+
+<h2 id="shell-模块"><a href="#shell-模块" class="headerlink" title="shell 模块"></a>shell 模块</h2><ul>
+<li>执行远程命令，支持管道符重定向</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible all -m shell -a &quot;echo &#x27;PASSWORD&#x27;|passwd --stdin root&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="hostname-模块"><a href="#hostname-模块" class="headerlink" title="hostname 模块"></a>hostname 模块</h3><ul>
+<li>用于修改主机名（不能修改&#x2F;etc&#x2F;hosts)</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible 192.168.0.11 -m hostname -a &quot;name=control-node&quot;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="file-模块"><a href="#file-模块" class="headerlink" title="file 模块"></a>file 模块</h3><ul>
+<li>用于对目标文件或文件夹相关的操作，主要用来设置文件、链接、目录的属性，或者移除文件、链接、目录等文件相关操作<ul>
+<li>path 文件绝对路径</li>
+<li>state	操作(touch文件新建、absent删除、link软连接、hard硬链接、directory目录创建)</li>
+<li>owner	设置所有者</li>
+<li>group	设置所属的组</li>
+<li>mode	权限 0000</li>
+<li>recurse	递归 yes or no</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible all -m file -a &quot;path=/tmp/testfile owner=root group=root mode=755 state=tqouch&quot; </span><br></pre></td></tr></table></figure>
+
+<h3 id="copy-模块"><a href="#copy-模块" class="headerlink" title="copy 模块"></a>copy 模块</h3><ul>
+<li>拷贝本地文件到远程机器<ul>
+<li>src			文件源路径</li>
+<li>dest		目标路径</li>
+<li>content	往目标文件输入内容</li>
+<li>force		是否强制覆盖 yes or no</li>
+<li>backup	是否备份有冲突的源文件[文件名相同，内容不同] yes or no</li>
+<li>checksum	拷贝完整性校验，使用sha1sum生成校验码</li>
+<li>owner		目标文件所有者</li>
+<li>group		目标文件所属组</li>
+<li>mode		目标文件权限 0000</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># /opt/data/ 带 &quot;/&quot; 表示copy data 目录下的所有到远程机器，不带&quot;/&quot; 表示copy data 目录 到 /mnt</span><br><span class="line">~]# ansible all -m copy -a &#x27;src=/opt/data/ dest=/mnt mode=0600&#x27;</span><br></pre></td></tr></table></figure>
+
+<h2 id="fetch-模块"><a href="#fetch-模块" class="headerlink" title="fetch 模块"></a>fetch 模块</h2><ul>
+<li>copy 远程机器的文件到本地，在管理机本地目录都会按照 “IP&#x2F;路径&#x2F;文件名” 的方式命名，防止冲突</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible all -m fetch -a &quot;src=/etc/fstab dest=/tmp&quot;</span><br><span class="line">~]# ls /tmp/192.168.0.1*</span><br><span class="line">/tmp/192.168.0.11:</span><br><span class="line">etc</span><br><span class="line"></span><br><span class="line">/tmp/192.168.0.12:</span><br><span class="line">etc</span><br><span class="line"></span><br><span class="line">/tmp/192.168.0.13:</span><br><span class="line">etc</span><br><span class="line">[root@control-node ~]# ls /tmp/192.168.0.1*/etc</span><br><span class="line">/tmp/192.168.0.11/etc:</span><br><span class="line">fstab</span><br><span class="line"></span><br><span class="line">/tmp/192.168.0.12/etc:</span><br><span class="line">fstab</span><br><span class="line"></span><br><span class="line">/tmp/192.168.0.13/etc:</span><br><span class="line">fstab</span><br></pre></td></tr></table></figure>
+
+<h3 id="user-模块"><a href="#user-模块" class="headerlink" title="user 模块"></a>user 模块</h3><ul>
+<li>管理用户账号和用户属性<ul>
+<li>name&#x3D;””	指定用户名</li>
+<li>password&#x3D;””	指定密码,必须是密文</li>
+<li>update_password&#x3D;””   更新用户密码</li>
+<li>state&#x3D; absent|present    删除|创建 默认为present</li>
+<li>system&#x3D; yes|no    是否为系统用户</li>
+<li>shell&#x3D;””    指定登陆shell</li>
+<li>generate_ssh_key&#x3D; yes|no  是否创建秘钥对</li>
+<li>uid&#x3D;	指定用户的uid</li>
+<li>append&#x3D; yes|no    用户是否追加到其他组</li>
+<li>group&#x3D;    用户属组</li>
+<li>groups&#x3D;	将现有用户加入到某个组，空值就会把该用户从所有所属组中删除</li>
+<li>create_home&#x3D; yes|no	是否建立家目录</li>
+<li>remove&#x3D; yes|no    删除家目录</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">~]# echo &quot;666666&quot; | openssl passwd -1 -stdin</span><br><span class="line">ansible node -m user -a &#x27;name=op_sys password=&quot;$1$NhaOU.GZ$NIke1Cnf5yp.0wgpauGut/&quot; state=present system=yes generate_ssh_key=yes&#x27;</span><br></pre></td></tr></table></figure>
+
+<h3 id="cron-模块"><a href="#cron-模块" class="headerlink" title="cron 模块"></a>cron 模块</h3><ul>
+<li>管理周期性时间任务</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible all -m cron -a &#x27;name=&quot; Time Sync by Aliyun cron&quot; job=&quot;ntpdate time1.aliyun.com&quot; minute=*/3 hour=* state=present&#x27;</span><br></pre></td></tr></table></figure>
+
+<h3 id="yum-模块"><a href="#yum-模块" class="headerlink" title="yum 模块"></a>yum 模块</h3><ul>
+<li>使用yum命令来管理软件包的安装与卸载</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible node -m yum -a &quot;list=repos&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="script-模块"><a href="#script-模块" class="headerlink" title="script 模块"></a>script 模块</h3><ul>
+<li>在远程主机执行本地脚本</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ansible all -m script -a &#x27;/data/local_scripts.sh&#x27;</span><br></pre></td></tr></table></figure>
+
+<h3 id="setup-模块"><a href="#setup-模块" class="headerlink" title="setup 模块"></a>setup 模块</h3><ul>
+<li>收集远程主机的基本信息（如操作系统类型,主机名,ip,cpu信息,内存信息等）<ul>
+<li>ansible_all_ipv4_addresses		显示ipv4的信息。</li>
+<li>ansible_devices								显示磁盘设备信息。</li>
+<li>ansible_distribution_major_version	显示是系统主版本。</li>
+<li>ansible_distribution_version	仅显示系统版本。</li>
+<li>ansible_machine								显示系统类型，例：32位，还是64位。</li>
+<li>ansible_lvm										显示lvm相关信息。</li>
+<li>ansible_memtotal_mb						显示系统总内存。</li>
+<li>ansible_memfree_mb						显示可用系统内存。</li>
+<li>ansible_memory_mb							详细显示内存情况。</li>
+<li>ansible_swaptotal_mb					显示总的swap内存。</li>
+<li>ansible_swapfree_mb						显示swap内存的可用内存。</li>
+<li>ansible_mounts								显示系统磁盘挂载情况。</li>
+<li>ansible_processor							显示cpu个数(具体显示每个cpu的型号)。</li>
+<li>ansible_processor_vcpus				显示cpu个数(只显示总的个数)。</li>
+<li>ansible_kernel								显示机器的内核信息</li>
+<li>ansible_hostname							显示主机名</li>
+<li>ansible_eth*									显示网卡信息</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible node -m setup  -a &quot;filter=&#x27;ansible_hostname&#x27;&quot;</span><br><span class="line">192.168.0.12 | SUCCESS =&gt; &#123;</span><br><span class="line">    &quot;ansible_facts&quot;: &#123;</span><br><span class="line">        &quot;ansible_hostname&quot;: &quot;node-1&quot;,</span><br><span class="line">        &quot;discovered_interpreter_python&quot;: &quot;/usr/bin/python&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;changed&quot;: false</span><br><span class="line">&#125;</span><br><span class="line">192.168.0.13 | SUCCESS =&gt; &#123;</span><br><span class="line">    &quot;ansible_facts&quot;: &#123;</span><br><span class="line">        &quot;ansible_hostname&quot;: &quot;node-2&quot;,</span><br><span class="line">        &quot;discovered_interpreter_python&quot;: &quot;/usr/bin/python&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;changed&quot;: false</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="archive-压缩模块"><a href="#archive-压缩模块" class="headerlink" title="archive 压缩模块"></a>archive 压缩模块</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible 192.168.0.11 -m archive -a &quot;path=/opt/data dest=/tmp/data.tar.gz format=gz&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="unarchive-解压缩模块"><a href="#unarchive-解压缩模块" class="headerlink" title="unarchive 解压缩模块"></a>unarchive 解压缩模块</h3><ul>
+<li>解压缩管理端的包到受控端</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~]# ansible  node -m unarchive -a &quot;src=/tmp/data.tar.gz dest=/mnt &quot;</span><br></pre></td></tr></table></figure>
+
+
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -365,7 +372,7 @@
 		</ul>
 	</div>
 
-          
+      
 	<div class="article-category tagcloud">
 		<i class="icon-book icon"></i>
 		<ul class="article-tag-list">
@@ -378,213 +385,113 @@
 	</div>
 
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://example.com/2022/05/16/Ansible-%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/11/NFS-%E4%BD%9C%E4%B8%BA-Kubernetes-%E7%9A%84%E5%8A%A8%E6%80%81%E5%AD%98%E5%82%A8%E7%B1%BB/" class="archive-article-date">
-  	<time datetime="2022-05-11T14:36:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-11</time>
-</a>
+<nav id="article-nav">
+  
+    <a href="/2022/05/21/Go-%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          Go 开发环境搭建
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2022/05/11/NFS-%E4%BD%9C%E4%B8%BA-Kubernetes-%E7%9A%84%E5%8A%A8%E6%80%81%E5%AD%98%E5%82%A8%E7%B1%BB/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">NFS 作为 Kubernetes 的动态存储类</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/11/NFS-%E4%BD%9C%E4%B8%BA-Kubernetes-%E7%9A%84%E5%8A%A8%E6%80%81%E5%AD%98%E5%82%A8%E7%B1%BB/">NFS 作为 Kubernetes 的动态存储类</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">helm</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/helm//" class="article-tag-list-link color5">helm</a>
-        		</li>
-      		
-		</ul>
-	</div>
+        
+        
+    </div>
+</aside>
 
 
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/11/DOCKER-%E4%BB%A3%E7%90%86%E9%85%8D%E7%BD%AE/" class="archive-article-date">
-  	<time datetime="2022-05-11T08:54:21.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-11</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/11/DOCKER-%E4%BB%A3%E7%90%86%E9%85%8D%E7%BD%AE/">DOCKER 代理配置</a>
-    </h1>
-  
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">docker</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/docker//" class="article-tag-list-link color2">docker</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/11/%E5%9F%BA%E4%BA%8EKubeadm%E6%90%AD%E5%BB%BAKubernetes%E9%9B%86%E7%BE%A4/" class="archive-article-date">
-  	<time datetime="2022-05-11T08:14:20.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-11</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/11/%E5%9F%BA%E4%BA%8EKubeadm%E6%90%AD%E5%BB%BAKubernetes%E9%9B%86%E7%BE%A4/">基于Kubeadm搭建Kubernetes集群</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">kubeadm</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Kubeadm//" class="article-tag-list-link color3">Kubeadm</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-ubuntu">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/10/Ubuntu-Server-%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E9%85%8D%E7%BD%AE/" class="archive-article-date">
-  	<time datetime="2022-05-10T10:19:35.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-10</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/10/Ubuntu-Server-%E7%B3%BB%E7%BB%9F%E5%9F%BA%E7%A1%80%E9%85%8D%E7%BD%AE/">Ubuntu Server 系统基础</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/linux//" class="article-tag-list-link color1">linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
   
   
-    </div></section>
   
 
-    
+  
+
+  
+
+  
 
 
           </div>
@@ -607,8 +514,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
