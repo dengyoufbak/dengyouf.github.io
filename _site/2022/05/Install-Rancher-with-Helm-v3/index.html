@@ -6,17 +6,17 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <title>博客模板功能介绍</title>
-  <meta name="description" content="在此之前我有写过一篇如何使用我博客模板的文章 请先看这篇基础集成，这篇文章主要讲的是如何使用和修改我的博客主题，文章内容含以下几点：">
+  <title>在 Kubernetes 集群中安装 Rancher</title>
+  <meta name="description" content="前置条件">
   <meta name="author" content="leopardpan">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="博客模板功能介绍">
-  <meta name="twitter:description" content="在此之前我有写过一篇如何使用我博客模板的文章 请先看这篇基础集成，这篇文章主要讲的是如何使用和修改我的博客主题，文章内容含以下几点：">
+  <meta name="twitter:title" content="在 Kubernetes 集群中安装 Rancher">
+  <meta name="twitter:description" content="前置条件">
   
   <meta property="og:type" content="article">
-  <meta property="og:title" content="博客模板功能介绍">
-  <meta property="og:description" content="在此之前我有写过一篇如何使用我博客模板的文章 请先看这篇基础集成，这篇文章主要讲的是如何使用和修改我的博客主题，文章内容含以下几点：">
+  <meta property="og:title" content="在 Kubernetes 集群中安装 Rancher">
+  <meta property="og:description" content="前置条件">
   
   <link rel="icon" type="image/png" href="/images/favicon.png" />
   <link href="/images/favicon.png" rel="shortcut icon" type="image/png">
@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="/css/main.css">
   <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
 
-  <link rel="canonical" href="http://localhost:4000/2020/07/blog_info/">
+  <link rel="canonical" href="http://localhost:4000/2022/05/Install-Rancher-with-Helm-v3/">
   <link rel="alternate" type="application/rss+xml" title="DengYou" href="http://localhost:4000/feed.xml">
   
   <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
@@ -160,10 +160,10 @@
 
 <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
   <header class="post-header">
-    <h1 class="post-title">博客模板功能介绍</h1>
+    <h1 class="post-title">在 Kubernetes 集群中安装 Rancher</h1>
     <div class="post-meta">
       <img src="/images/calendar.png" width="20px"/> 
-      <time datetime="2020-07-11 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2020-07-11</time>  
+      <time datetime="2022-05-28 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2022-05-28</time>  
 
       <span id="busuanzi_container_page_pv"> | 阅读：<span id="busuanzi_value_page_pv"></span>次</span>
     </p>
@@ -173,79 +173,311 @@
   
     <h2 class="post-title">目录</h2>
     <ul>
-  <li><a href="#博客特性">博客特性</a></li>
-  <li><a href="#博客主要模块介绍">博客主要模块介绍</a>
-    <ul>
-      <li><a href="#_configyml">_config.yml</a></li>
-      <li><a href="#_posts">_posts</a></li>
-      <li><a href="#自定义页面">自定义页面</a></li>
-      <li><a href="#修改说明">修改说明</a></li>
-    </ul>
-  </li>
+  <li><a href="#前置条件">前置条件</a></li>
+  <li><a href="#准备证书">准备证书</a></li>
+  <li><a href="#参考">参考</a></li>
 </ul>
 
   
 
   <section class="post">
-    <p>在此之前我有写过一篇<a href="http://leopardpan.cn/2016/10/jekyll_tutorials1/">如何使用我博客模板的文章</a> 请先看这篇基础集成，这篇文章主要讲的是如何使用和修改我的博客主题，文章内容含以下几点：</p>
+    <h2 id="前置条件">前置条件</h2>
 
-<h2 id="博客特性">博客特性</h2>
-
-<ul class="task-list">
-  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />适配电脑、手机、平板等各屏幕</li>
-  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />响应式设计</li>
-  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />个性化头像</li>
-  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />每篇文章自动添加打赏功能</li>
-  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />支持Disqus、livere评论系统</li>
-  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />支持站点总数访问统计，每篇文章访问统计</li>
-  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />支持文章自动生成目录</li>
-  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />支持标签分类</li>
-  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />支持代码高亮</li>
-  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />支持文章H1、H2、H3、H4标题样式多样化</li>
-  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />支持多种三方社交icon展示，能从博客直接跳转到自己的三方社交主页</li>
-  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />支持三方社交分享(facebook、twitter)</li>
-</ul>
-
-<h2 id="博客主要模块介绍">博客主要模块介绍</h2>
-
-<h3 id="_configyml">_config.yml</h3>
-
-<p><code class="language-plaintext highlighter-rouge">_config.yml</code> 是博客的配置文件，整个站点的信息都在这修改，想要把我的模板改成你自己的也需要修改<code class="language-plaintext highlighter-rouge">_config.yml</code></p>
-
-<p><strong>重要字段说明</strong></p>
+<blockquote>
+  <p>在一个准备好的 Kubernetes 集群中安装 Rancher v2.6.5 UI</p>
+</blockquote>
 
 <ul>
-  <li>enableToc: 是否开启文章自动生成目录，设置为false文章不会自动生成目录</li>
-  <li>comment/livere: livere评论系统，支持微信、qq、微博、豆瓣、twitter等登录后可以直接评论</li>
-  <li>comment/disqus: disqus评论系统，支持facebook、twitter等登录后可以直接评论</li>
-  <li>social/weibo、github、zhihu、jianshu等: 个人站底部展示的微博等三方社交按钮，点击后直接跳转到个人微博或其他社交主页</li>
-  <li>baidu/id: 百度统计，用来统计你个人站点的用户访问情况</li>
-  <li>ga/id: google统计，用来统计你个人站点的用户访问情况</li>
+  <li>Kubernetes v1.23.6</li>
+  <li>Ingress Controller</li>
+  <li>Helm v3</li>
 </ul>
 
-<p>_config.yml 文件除以上字段还有一些可以自行修改，例如title之类的字段</p>
+<h2 id="准备证书">准备证书</h2>
 
-<h3 id="_posts">_posts</h3>
+<blockquote>
+  <p>使用自签名的证书来创建 Kubernetes secret，以供 Rancher 使用,复制下面代码另存为 create_self-signed-cert.sh</p>
+</blockquote>
 
-<p><code class="language-plaintext highlighter-rouge">_posts</code> 目录是用来存放文章的目录，写新文章，直接放在这个目录即可</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#!/bin/bash -e
 
-<p>使用博客模板时，请把博客自带的文章给去掉，如果想使用博客自带的文章请 <code class="language-plaintext highlighter-rouge">注明出处</code>。</p>
+help ()
+{
+    echo  ' ================================================================ '
+    echo  ' --ssl-domain: 生成ssl证书需要的主域名，如不指定则默认为www.rancher.local，如果是ip访问服务，则可忽略；'
+    echo  ' --ssl-trusted-ip: 一般ssl证书只信任域名的访问请求，有时候需要使用ip去访问server，那么需要给ssl证书添加扩展IP，多个IP用逗号隔开；'
+    echo  ' --ssl-trusted-domain: 如果想多个域名访问，则添加扩展域名（SSL_TRUSTED_DOMAIN）,多个扩展域名用逗号隔开；'
+    echo  ' --ssl-size: ssl加密位数，默认2048；'
+    echo  ' --ssl-cn: 国家代码(2个字母的代号),默认CN;'
+    echo  ' 使用示例:'
+    echo  ' ./create_self-signed-cert.sh --ssl-domain=www.test.com --ssl-trusted-domain=www.test2.com \ '
+    echo  ' --ssl-trusted-ip=1.1.1.1,2.2.2.2,3.3.3.3 --ssl-size=2048 --ssl-date=3650'
+    echo  ' ================================================================'
+}
 
-<h3 id="自定义页面">自定义页面</h3>
+case "$1" in
+    -h|--help) help; exit;;
+esac
 
-<p>about.md、support.md 等为自定义页面，如果你想添加自动以页面可以直接复制about.md 文件修改文件名和里面的内容即可。</p>
+if [[ $1 == '' ]];then
+    help;
+    exit;
+fi
 
-<p>如果需要在导航显示你新增的页面，直接在<code class="language-plaintext highlighter-rouge">_config.yml</code> 文件的nav字段中添加你新页面配置即可</p>
+CMDOPTS="$*"
+for OPTS in $CMDOPTS;
+do
+    key=$(echo ${OPTS} | awk -F"=" '{print $1}' )
+    value=$(echo ${OPTS} | awk -F"=" '{print $2}' )
+    case "$key" in
+        --ssl-domain) SSL_DOMAIN=$value ;;
+        --ssl-trusted-ip) SSL_TRUSTED_IP=$value ;;
+        --ssl-trusted-domain) SSL_TRUSTED_DOMAIN=$value ;;
+        --ssl-size) SSL_SIZE=$value ;;
+        --ssl-date) SSL_DATE=$value ;;
+        --ca-date) CA_DATE=$value ;;
+        --ssl-cn) CN=$value ;;
+    esac
+done
 
-<h3 id="修改说明">修改说明</h3>
+# CA相关配置
+CA_DATE=${CA_DATE:-3650}
+CA_KEY=${CA_KEY:-cakey.pem}
+CA_CERT=${CA_CERT:-cacerts.pem}
+CA_DOMAIN=cattle-ca
 
-<p>如果要修改博客模板信息建议只修改<code class="language-plaintext highlighter-rouge">_config.yml</code> 文件内容和 <code class="language-plaintext highlighter-rouge">_posts</code> 里面的文章信息。因为博客模板一直在更新迭代，改动多了以免你后期更新博客模板的时候不方便。</p>
+# ssl相关配置
+SSL_CONFIG=${SSL_CONFIG:-$PWD/openssl.cnf}
+SSL_DOMAIN=${SSL_DOMAIN:-'www.rancher.local'}
+SSL_DATE=${SSL_DATE:-3650}
+SSL_SIZE=${SSL_SIZE:-2048}
 
-<p>如果你想改动模板的样式又想继续更新迭代博客模板，你可以提交在github上提交<code class="language-plaintext highlighter-rouge">pull request</code> 或者直接给我发邮件建议改成什么样，如果你的提议确实可以，我会采纳的，并且非常感谢你的建议。</p>
+## 国家代码(2个字母的代号),默认CN;
+CN=${CN:-CN}
 
-<p>博客迭代信息请看<a href="http://leopardpan.cn/2020/07/ReleaseNode/">ReleaseNode</a></p>
+SSL_KEY=$SSL_DOMAIN.key
+SSL_CSR=$SSL_DOMAIN.csr
+SSL_CERT=$SSL_DOMAIN.crt
 
-<p>遇到解决不了的问题可以找 <a href="http://leopardpan.cn/support/">技术支持</a></p>
+echo -e "\033[32m ---------------------------- \033[0m"
+echo -e "\033[32m       | 生成 SSL Cert |       \033[0m"
+echo -e "\033[32m ---------------------------- \033[0m"
+
+if [[ -e ./${CA_KEY} ]]; then
+    echo -e "\033[32m ====&gt; 1. 发现已存在CA私钥，备份"${CA_KEY}"为"${CA_KEY}"-bak，然后重新创建 \033[0m"
+    mv ${CA_KEY} "${CA_KEY}"-bak
+    openssl genrsa -out ${CA_KEY} ${SSL_SIZE}
+else
+    echo -e "\033[32m ====&gt; 1. 生成新的CA私钥 ${CA_KEY} \033[0m"
+    openssl genrsa -out ${CA_KEY} ${SSL_SIZE}
+fi
+
+if [[ -e ./${CA_CERT} ]]; then
+    echo -e "\033[32m ====&gt; 2. 发现已存在CA证书，先备份"${CA_CERT}"为"${CA_CERT}"-bak，然后重新创建 \033[0m"
+    mv ${CA_CERT} "${CA_CERT}"-bak
+    openssl req -x509 -sha256 -new -nodes -key ${CA_KEY} -days ${CA_DATE} -out ${CA_CERT} -subj "/C=${CN}/CN=${CA_DOMAIN}"
+else
+    echo -e "\033[32m ====&gt; 2. 生成新的CA证书 ${CA_CERT} \033[0m"
+    openssl req -x509 -sha256 -new -nodes -key ${CA_KEY} -days ${CA_DATE} -out ${CA_CERT} -subj "/C=${CN}/CN=${CA_DOMAIN}"
+fi
+
+echo -e "\033[32m ====&gt; 3. 生成Openssl配置文件 ${SSL_CONFIG} \033[0m"
+cat &gt; ${SSL_CONFIG} &lt;&lt;EOM
+[req]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+[req_distinguished_name]
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = clientAuth, serverAuth
+EOM
+
+if [[ -n ${SSL_TRUSTED_IP} || -n ${SSL_TRUSTED_DOMAIN} || -n ${SSL_DOMAIN} ]]; then
+    cat &gt;&gt; ${SSL_CONFIG} &lt;&lt;EOM
+subjectAltName = @alt_names
+[alt_names]
+EOM
+    IFS=","
+    dns=(${SSL_TRUSTED_DOMAIN})
+    dns+=(${SSL_DOMAIN})
+    for i in "${!dns[@]}"; do
+      echo DNS.$((i+1)) = ${dns[$i]} &gt;&gt; ${SSL_CONFIG}
+    done
+
+    if [[ -n ${SSL_TRUSTED_IP} ]]; then
+        ip=(${SSL_TRUSTED_IP})
+        for i in "${!ip[@]}"; do
+          echo IP.$((i+1)) = ${ip[$i]} &gt;&gt; ${SSL_CONFIG}
+        done
+    fi
+fi
+
+echo -e "\033[32m ====&gt; 4. 生成服务SSL KEY ${SSL_KEY} \033[0m"
+openssl genrsa -out ${SSL_KEY} ${SSL_SIZE}
+
+echo -e "\033[32m ====&gt; 5. 生成服务SSL CSR ${SSL_CSR} \033[0m"
+openssl req -sha256 -new -key ${SSL_KEY} -out ${SSL_CSR} -subj "/C=${CN}/CN=${SSL_DOMAIN}" -config ${SSL_CONFIG}
+
+echo -e "\033[32m ====&gt; 6. 生成服务SSL CERT ${SSL_CERT} \033[0m"
+openssl x509 -sha256 -req -in ${SSL_CSR} -CA ${CA_CERT} \
+    -CAkey ${CA_KEY} -CAcreateserial -out ${SSL_CERT} \
+    -days ${SSL_DATE} -extensions v3_req \
+    -extfile ${SSL_CONFIG}
+
+echo -e "\033[32m ====&gt; 7. 证书制作完成 \033[0m"
+echo
+echo -e "\033[32m ====&gt; 8. 以YAML格式输出结果 \033[0m"
+echo "----------------------------------------------------------"
+echo "ca_key: |"
+cat $CA_KEY | sed 's/^/  /'
+echo
+echo "ca_cert: |"
+cat $CA_CERT | sed 's/^/  /'
+echo
+echo "ssl_key: |"
+cat $SSL_KEY | sed 's/^/  /'
+echo
+echo "ssl_csr: |"
+cat $SSL_CSR | sed 's/^/  /'
+echo
+echo "ssl_cert: |"
+cat $SSL_CERT | sed 's/^/  /'
+echo
+
+echo -e "\033[32m ====&gt; 9. 附加CA证书到Cert文件 \033[0m"
+cat ${CA_CERT} &gt;&gt; ${SSL_CERT}
+echo "ssl_cert: |"
+cat $SSL_CERT | sed 's/^/  /'
+echo
+
+echo -e "\033[32m ====&gt; 10. 重命名服务证书 \033[0m"
+echo "cp ${SSL_DOMAIN}.key tls.key"
+cp ${SSL_DOMAIN}.key tls.key
+echo "cp ${SSL_DOMAIN}.crt tls.crt"
+cp ${SSL_DOMAIN}.crt tls.crt
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>chmod +x ./create_self-signed-cert.sh
+./create_self-signed-cert.sh --ssl-domain=www.linux.io --ssl-trusted-domain=rancher-ui.linux.io \
+--ssl-size=2048 \
+--ssl-date=3650 \
+--ssl-cn=CN
+</code></pre></div></div>
+
+<ul>
+  <li>验证证书状态</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>openssl verify -CAfile cacerts.pem tls.crt #应该返回状态为 ok
+</code></pre></div></div>
+
+<ul>
+  <li>证书提交到 cattle-system 命名空间</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create namespace cattle-system
+
+kubectl create secret generic tls-ca -n cattle-system --from-file=cacerts.pem
+kubectl create secret tls tls-rancher-ingress -n cattle-system --cert=./tls.crt --key=./tls.key
+</code></pre></div></div>
+
+<ul>
+  <li>添加 Helm Chart 仓库</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
+</code></pre></div></div>
+
+<ul>
+  <li>安装 Rancher v2.6.5</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm install rancher rancher-stable/rancher --namespace cattle-system \
+--set hostname=rancher-ui.linux.io \
+--set ingress.tls.source=secret \
+--set privateCA=true --version 2.6.5 
+# registry.cn-hangzhou.aliyuncs.com/rancher/rancher:v2.6.5
+</code></pre></div></div>
+
+<ul>
+  <li>验证 Rancher Server 是否已成功部署</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl  get pod -n cattle-system
+NAME                               READY   STATUS              RESTARTS   AGE     IP           NODE           NOMINATED NODE   READINESS GATES
+rancher-554cfb8646-p5gzr           1/1     Running             0          54m     10.42.2.13   rke-master-2   &lt;none&gt;           &lt;none&gt;
+rancher-554cfb8646-xvlll           1/1     Running             0          89s     10.42.4.13   rke-worker-1   &lt;none&gt;           &lt;none&gt;
+rancher-webhook-5b65595df9-krcrr   1/1     Running             0          11m     10.42.4.8    rke-worker-1   &lt;none&gt;           &lt;none&gt;
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>~]$ kubectl  get ingress -n cattle-system
+NAME      CLASS   HOSTS                 ADDRESS                         PORTS     AGE
+rancher   nginx   rancher-ui.linux.io   192.168.56.211,192.168.56.212   80, 443   47m
+</code></pre></div></div>
+
+<ul>
+  <li>配置 Nginx</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat /etc/nginx/nginx.conf
+worker_processes 4;
+worker_rlimit_nofile 40000;
+
+events {
+    worker_connections 8192;
+}
+
+stream {
+    upstream rancher_servers_http {
+        least_conn;
+        server 192.168.56.211:80 max_fails=3 fail_timeout=5s;   ##rancher节点
+        server 192.168.56.212:80 max_fails=3 fail_timeout=5s;
+    }
+    server {
+        listen 80;
+        proxy_pass rancher_servers_http;
+    }
+
+    upstream rancher_servers_https {
+        least_conn;
+        server 192.168.56.211:443 max_fails=3 fail_timeout=5s;
+        server 192.168.56.212:443 max_fails=3 fail_timeout=5s;
+    }
+    server {
+        listen     443;
+        proxy_pass rancher_servers_https;
+    }
+
+}
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run -d --restart=unless-stopped \
+  -p 80:80 -p 443:443 \
+  -v /etc/nginx/nginx.conf:/etc/nginx/nginx.conf \
+  nginx:1.14
+</code></pre></div></div>
+
+<ul>
+  <li>访问 UI</li>
+</ul>
+
+<blockquote>
+  <p>https://rancher-ui.linux.io/dashboard/?setup=</p>
+</blockquote>
+
+<div class="language-latex highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">\newcommand\abc</span><span class="p">{</span><span class="c">%</span>
+./kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='<span class="p">{{</span>.data.bootstrapPassword|base64decode<span class="p">}}{{</span>"<span class="k">\n</span>"<span class="p">}}</span>'
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="参考">参考</h2>
+
+<ul>
+  <li>支持矩阵: https://www.suse.com/suse-rancher/support-matrix/all-supported-versions/rancher-v2-6-5/</li>
+  <li>自签证书: https://docs.rancher.cn/docs/rancher2.5/installation/resources/advanced/self-signed-ssl/_index/#41-%E4%B8%80%E9%94%AE%E7%94%9F%E6%88%90-ssl-%E8%87%AA%E7%AD%BE%E5%90%8D%E8%AF%81%E4%B9%A6%E8%84%9A%E6%9C%AC</li>
+  <li>如何在国内使用Rancher: https://docs.rancher.cn/docs/rancher2/best-practices/use-in-china/_index</li>
+  <li>通过 helm 安装 rancher: https://docs.rancher.cn/docs/rancher2.5/trending-topics/install-rancher-on-k8s/_index#5-%E6%A0%B9%E6%8D%AE%E4%BD%A0%E9%80%89%E6%8B%A9%E7%9A%84-ssl-%E9%80%89%E9%A1%B9%EF%BC%8C%E9%80%9A%E8%BF%87-helm-%E5%AE%89%E8%A3%85-rancher</li>
+</ul>
 
 
   </section>
@@ -315,11 +547,11 @@
 
        <ul class="pager">
         
-        
-        <li class="next">
-            <a href="/2022/05/Install-Kubernetes-with-RKE/" data-toggle="tooltip" data-placement="top" title="RKE 构建高可用的 KUBERNETES 集群">下一篇：  <span>RKE 构建高可用的 KUBERNETES 集群</span>
+        <li class="previous">
+            <a href="/2022/05/Install-Kubernetes-with-RKE/" data-toggle="tooltip" data-placement="top" title="RKE 构建高可用的 KUBERNETES 集群">上一篇：  <span>RKE 构建高可用的 KUBERNETES 集群</span>
             </a>
         </li>
+        
         
     </ul>
 </section>
@@ -331,8 +563,8 @@
     <script>
     
     var disqus_config = function () {
-        this.page.url = "http://localhost:4000/2020/07/blog_info/";
-        this.page.identifier = "/2020/07/blog_info/";
+        this.page.url = "http://localhost:4000/2022/05/Install-Rancher-with-Helm-v3/";
+        this.page.identifier = "/2022/05/Install-Rancher-with-Helm-v3/";
     };
     var disqus_shortname = 'leopard';
     
