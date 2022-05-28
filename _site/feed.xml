@@ -1,0 +1,793 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>潘柏信</title>
+    <description>欢迎来到我的个人站~</description>
+    <link>http://localhost:4000/</link>
+    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Sat, 28 May 2022 22:31:20 +0800</pubDate>
+    <lastBuildDate>Sat, 28 May 2022 22:31:20 +0800</lastBuildDate>
+    <generator>Jekyll v4.2.2</generator>
+    
+      <item>
+        <title>RKE 构建高可用的 Kubernetes 集群</title>
+        <description>&lt;h2 id=&quot;rke-概述&quot;&gt;RKE 概述&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Rancher Kubernetes Engine (RKE) 是一个 CNCF 认证的 Kubernetes 发行版，完全在 Docker 容器中运行。它适用于裸机和虚拟化服务器。RKE 解决了安装复杂的问题，这是 Kubernetes 社区的一个常见问题。使用 RKE，Kubernetes 的安装和操作既简单又容易自动化，并且完全独立于您运行的操作系统和平台。只要你能运行受支持的 Docker 版本，你就可以使用 RKE 部署和运行 Kubernetes。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;kubernetes-集群环境介绍&quot;&gt;Kubernetes 集群环境介绍&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;本次使用 CentOS7.9 最小化安装,集群机器规划信息如下表,软件版本信息如下:&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;rke: v1.3.11&lt;/li&gt;
+  &lt;li&gt;kubernetes: v1.23.6&lt;/li&gt;
+  &lt;li&gt;docker: 20.10.0&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;主机名&lt;/th&gt;
+      &lt;th&gt;IP 地址&lt;/th&gt;
+      &lt;th&gt;机器配置&lt;/th&gt;
+      &lt;th&gt;用途&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;rke-lb&lt;/td&gt;
+      &lt;td&gt;192.168.56.101&lt;/td&gt;
+      &lt;td&gt;1C1G&lt;/td&gt;
+      &lt;td&gt;Nginx&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;rke-master-1&lt;/td&gt;
+      &lt;td&gt;192.168.56.111&lt;/td&gt;
+      &lt;td&gt;4C4G&lt;/td&gt;
+      &lt;td&gt;controlplane,etcd,worker&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;rke-master-2&lt;/td&gt;
+      &lt;td&gt;192.168.56.112&lt;/td&gt;
+      &lt;td&gt;4C4G&lt;/td&gt;
+      &lt;td&gt;controlplane,etcd,worker&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;rke-master-3&lt;/td&gt;
+      &lt;td&gt;192.168.56.113&lt;/td&gt;
+      &lt;td&gt;4C4G&lt;/td&gt;
+      &lt;td&gt;controlplane,etcd,worker&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;rke-worker-1&lt;/td&gt;
+      &lt;td&gt;192.168.56.211&lt;/td&gt;
+      &lt;td&gt;4C4G&lt;/td&gt;
+      &lt;td&gt;worker&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;rke-worker-1&lt;/td&gt;
+      &lt;td&gt;192.168.56.212&lt;/td&gt;
+      &lt;td&gt;4C4G&lt;/td&gt;
+      &lt;td&gt;worker&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h3 id=&quot;机器环境设置&quot;&gt;机器环境设置&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;主机名解析&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;~]$ sudo cat /etc/hosts
+192.168.56.101  rke-lb   rancher-ui.linux.io
+192.168.56.111  rke-master-1
+192.168.56.112  rke-master-2
+192.168.56.113  rke-master-3
+192.168.56.211  rke-worker-1
+192.168.56.212  rke-worker-2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;安装基础软件包&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+ sudo yum remove -y  firewalld python-firewall firewalld-filesystem
+ sudo yum install -y bash-completion conntrack-tools ipset ipvsadm libseccomp nfs-utils psmisc socat wget vim net-tools ntpdate
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;时间同步&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+echo &apos;*/5 * * * * /usr/sbin/ntpdate ntp.aliyun.com &amp;amp;&amp;gt; /dev/null&apos; |sudo tee /var/spool/cron//root
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;关闭Selinux、Firewalld 已以及 Swap 分区&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+sudo setenforce 0
+sudo sed -i &apos;s@SELINUX=enforcing@SELINUX=disabled@&apos; /etc/selinux/config
+sudo swapoff -a &amp;amp;&amp;amp; sysctl -w vm.swappiness=0
+sudo sed -i &apos;/swap/d&apos; /etc/fstab
+sudo systemctl stop firewalld &amp;amp;&amp;amp; sudo systemctl disable firewalld
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;加载内核模块&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+for i in br_netfilter ip_vs ip_vs_rr ip_vs_wrr ip_vs_sh nf_conntrack;do
+    sudo modprobe $i
+done
+sudo modprobe nf_conntrack_ipv4 || echo &quot;NoFound&quot;
+sudo echo &apos;br_netfilter
+ip_vs
+ip_vs_rr
+ip_vs_wrr
+ip_vs_sh
+nf_conntrack
+nf_conntrack_ipv4&apos;|sudo tee  /etc/modules-load.d/10-k8s-modules.conf
+sudo systemctl  enable systemd-modules-load --now
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;修改/添加内核参数&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+sudo echo &apos;net.ipv4.ip_forward = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-arptables = 1
+# KERNEL_VER &amp;lt; 4.12
+#net.ipv4.tcp_tw_recycle = 0
+#net.ipv4.tcp_tw_reuse = 0
+net.core.somaxconn = 32768
+net.netfilter.nf_conntrack_max=1000000
+vm.swappiness = 0
+vm.max_map_count=655360
+fs.file-max=6553600
+# PROXY_MODE == &quot;ipvs&quot;
+net.ipv4.tcp_keepalive_time = 600
+net.ipv4.tcp_keepalive_intvl = 30
+net.ipv4.tcp_keepalive_probes = 10&apos;|sudo tee -a /etc/sysctl.d/95-k8s-sysctl.conf
+sudo sysctl -p /etc/sysctl.d/95-k8s-sysctl.conf
+}
+# 禁用sctp
+{
+sudo echo &apos;# put sctp into blacklist
+install sctp /bin/true&apos;|sudo tee /etc/modprobe.d/sctp.conf
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h1 id=&quot;修改-ulimits-参数&quot;&gt;修改 ulimits 参数&lt;/h1&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+sudo mkdir -pv /etc/systemd/system.conf.d/
+echo &apos;[Manager]
+DefaultLimitCORE=infinity
+DefaultLimitNOFILE=100000
+DefaultLimitNPROC=100000&apos;|sudo tee /etc/systemd/system.conf.d/30-k8s-ulimits.conf
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;安装容器运行时&quot;&gt;安装容器运行时&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+sudo yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+sudo sed -i &apos;s+download.docker.com+mirrors.aliyun.com/docker-ce+&apos; /etc/yum.repos.d/docker-ce.repo
+sudo yum makecache fast
+sudo yum -y install docker-ce-20.10.0
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+sudo mkdir /etc/docker  &amp;amp;&amp;amp; sudo mkdir -pv /data/docker-root
+echo &apos;{
+    &quot;oom-score-adjust&quot;: -1000,
+    &quot;log-driver&quot;: &quot;json-file&quot;,
+    &quot;log-opts&quot;: {
+    &quot;max-size&quot;: &quot;100m&quot;,
+    &quot;max-file&quot;: &quot;3&quot;
+    },
+    &quot;max-concurrent-downloads&quot;: 10,
+    &quot;max-concurrent-uploads&quot;: 10,
+    &quot;bip&quot;: &quot;172.20.1.0/16&quot;,
+    &quot;storage-driver&quot;: &quot;overlay2&quot;,
+    &quot;storage-opts&quot;: [
+    &quot;overlay2.override_kernel_check=true&quot;
+    ],
+    &quot;registry-mirrors&quot;: [&quot;https://o4uba187.mirror.aliyuncs.com&quot;],
+    &quot;data-root&quot;:  &quot;/data/docker-root&quot;,
+    &quot;exec-opts&quot;: [&quot;native.cgroupdriver=systemd&quot;]
+}&apos;|sudo tee /etc/docker/daemon.json
+sudo systemctl enable docker --now
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;安装-kubernetes-集群&quot;&gt;安装 kubernetes 集群&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;创建普通用户&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+useradd vagrant
+echo &quot;vagrant&quot;|passwd --stdin vagrant
+echo &quot;vagrant  ALL=(ALL)       NOPASSWD: ALL&quot; &amp;gt;&amp;gt; /etc/sudoers.d/vagrant
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+sudo usermod -aG docker vagrant
+sudo chown  vagrant.vagrant /var/run/docker.sock
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;主机互信&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo yum install -y sshpass
+cat ssh-copy.sh
+#!/bin/bash
+#
+IP=&quot;192.168.56.111
+192.168.56.112
+192.168.56.113
+192.168.56.211
+192.168.56.212&quot;
+
+#ssh-keygen -t rsa -b 2048 -N &apos;&apos; -f ~/.ssh/id_rsa
+
+for node in ${IP};do
+    sshpass -p vagrant ssh-copy-id  ${node}  -o StrictHostKeyChecking=no
+    ssh $node &quot;sudo chown vagrant.vagrant /var/run/docker.sock &quot;
+    if [ $? -eq 0 ];then
+        echo -e &quot;\033[46;31m ${node} 秘钥copy成功 \033[0m&quot;
+    else
+        echo -e &quot;\033[43;31m ${node} 秘钥copy失败 \033[0m&quot;
+    fi
+done
+
+bash ssh-copy.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;安装 rke&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+sudo wget https://rancher-mirror.rancher.cn/rke/v1.3.11/rke_linux-amd64  -o /usr/local/bin/rke
+sudo chown vagrant.vagrant  /usr/local/bin/rke &amp;amp;&amp;amp; chmod +x /usr/local/bin/rke
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;初始化集群&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;]$ rke config
+[+] Cluster Level SSH Private Key Path [~/.ssh/id_rsa]:
+[+] Number of Hosts [1]: 5
+[+] SSH Address of host (1) [none]: 192.168.56.111
+[+] SSH Port of host (1) [22]:
+[+] SSH Private Key Path of host (192.168.56.111) [none]:
+[-] You have entered empty SSH key path, trying fetch from SSH key parameter
+[+] SSH Private Key of host (192.168.56.111) [none]:
+[-] You have entered empty SSH key, defaulting to cluster level SSH key: ~/.ssh/id_rsa
+[+] SSH User of host (192.168.56.111) [ubuntu]: vagrant
+[+] Is host (192.168.56.111) a Control Plane host (y/n)? [y]: y
+[+] Is host (192.168.56.111) a Worker host (y/n)? [n]: y
+[+] Is host (192.168.56.111) an etcd host (y/n)? [n]: y
+[+] Override Hostname of host (192.168.56.111) [none]: rke-master-1
+[+] Internal IP of host (192.168.56.111) [none]: 192.168.56.111
+[+] Docker socket path on host (192.168.56.111) [/var/run/docker.sock]:
+[+] SSH Address of host (2) [none]:
+...
+[+] Docker socket path on host (192.168.56.212) [/var/run/docker.sock]:
+[+] Network Plugin Type (flannel, calico, weave, canal, aci) [canal]: canel
+[+] Authentication Strategy [x509]:
+[+] Authorization Mode (rbac, none) [rbac]:
+[+] Kubernetes Docker image [rancher/hyperkube:v1.23.6-rancher1]: registry.cn-hangzhou.aliyuncs.com/rancher/hyperkube:v1.23.6-rancher1
+[+] Cluster domain [cluster.local]:
+[+] Service Cluster IP Range [10.43.0.0/16]:
+[+] Enable PodSecurityPolicy [n]:
+[+] Cluster Network CIDR [10.42.0.0/16]:
+[+] Cluster DNS Service IP [10.43.0.10]:
+[+] Add addon manifest URLs or YAML files [no]:
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# 完整配置文件
+cat cluster.yml                                                   
+# If you intended to deploy Kubernetes in an air-gapped environment
+# please consult the documentation on how to configure custom RKE images.
+nodes:
+- address: 192.168.56.111
+  port: &quot;22&quot;
+  internal_address: 192.168.56.111
+  role:
+  - controlplane
+  - worker
+  - etcd
+  hostname_override: rke-master-1
+  user: vagrant
+  docker_socket: /var/run/docker.sock
+  ssh_key: &quot;&quot;
+  ssh_key_path: ~/.ssh/id_rsa
+  ssh_cert: &quot;&quot;
+  ssh_cert_path: &quot;&quot;
+  labels: {}
+  taints: []
+- address: 192.168.56.112
+  port: &quot;22&quot;
+  internal_address: 192.168.56.112
+  role:
+  - controlplane
+  - worker
+  - etcd
+  hostname_override: rke-master-2
+  user: vagrant
+  docker_socket: /var/run/docker.sock
+  ssh_key: &quot;&quot;
+  ssh_key_path: ~/.ssh/id_rsa
+  ssh_cert: &quot;&quot;
+  ssh_cert_path: &quot;&quot;
+  labels: {}
+  taints: []
+- address: 192.168.56.113
+  port: &quot;22&quot;
+  internal_address: 192.168.56.113
+  role:
+  - controlplane
+  - worker
+  - etcd
+  hostname_override: rke-master-3
+  user: vagrant
+  docker_socket: /var/run/docker.sock
+  ssh_key: &quot;&quot;
+  ssh_key_path: ~/.ssh/id_rsa
+  ssh_cert: &quot;&quot;
+  ssh_cert_path: &quot;&quot;
+  labels: {}
+  taints: []
+- address: 192.168.56.211
+  port: &quot;22&quot;
+  internal_address: 192.168.56.211
+  role:
+  - worker
+  hostname_override: rke-worker-1
+  user: vagrant
+  docker_socket: /var/run/docker.sock
+  ssh_key: &quot;&quot;
+  ssh_key_path: ~/.ssh/id_rsa
+  ssh_cert: &quot;&quot;
+  ssh_cert_path: &quot;&quot;
+  labels:
+    app: ingress
+  taints: []
+- address: 192.168.56.212
+  port: &quot;22&quot;
+  internal_address: 192.168.56.212
+  role:
+  - worker
+  hostname_override: rke-worker-2
+  user: vagrant
+  docker_socket: /var/run/docker.sock
+  ssh_key: &quot;&quot;
+  ssh_key_path: ~/.ssh/id_rsa
+  ssh_cert: &quot;&quot;
+  ssh_cert_path: &quot;&quot;
+  labels:
+    app: ingress
+  taints: []
+services:
+  etcd:
+    image: &quot;&quot;
+    extra_args: {}
+    extra_binds: []
+    extra_env: []
+    win_extra_args: {}
+    win_extra_binds: []
+    win_extra_env: []
+    external_urls: []
+    ca_cert: &quot;&quot;
+    cert: &quot;&quot;
+    key: &quot;&quot;
+    path: &quot;&quot;
+    uid: 0
+    gid: 0
+    snapshot: null
+    retention: &quot;&quot;
+    creation: &quot;&quot;
+    backup_config: null
+  kube-api:
+    image: &quot;&quot;
+    extra_args: {}
+    extra_binds: []
+    extra_env: []
+    win_extra_args: {}
+    win_extra_binds: []
+    win_extra_env: []
+    service_cluster_ip_range: 10.43.0.0/16
+    service_node_port_range: &quot;&quot;
+    pod_security_policy: false
+    always_pull_images: false
+    secrets_encryption_config: null
+    audit_log: null
+    admission_configuration: null
+    event_rate_limit: null
+  kube-controller:
+    image: &quot;&quot;
+    extra_args: {}
+    extra_binds: []
+    extra_env: []
+    win_extra_args: {}
+    win_extra_binds: []
+    win_extra_env: []
+    cluster_cidr: 10.42.0.0/16
+    service_cluster_ip_range: 10.43.0.0/16
+  scheduler:
+    image: &quot;&quot;
+    extra_args: {}
+    extra_binds: []
+    extra_env: []
+    win_extra_args: {}
+    win_extra_binds: []
+    win_extra_env: []
+  kubelet:
+    image: &quot;&quot;
+    extra_args: {}
+    extra_binds: []
+    extra_env: []
+    win_extra_args: {}
+    win_extra_binds: []
+    win_extra_env: []
+    cluster_domain: cluster.local
+    infra_container_image: &quot;&quot;
+    cluster_dns_server: 10.43.0.10
+    fail_swap_on: false
+    generate_serving_certificate: false
+  kubeproxy:
+    image: &quot;&quot;
+    extra_args: {}
+    extra_binds: []
+    extra_env: []
+    win_extra_args: {}
+    win_extra_binds: []
+    win_extra_env: []
+network:
+  plugin: canal
+  # 指定网络接口
+  options:
+    canal_iface: eth1
+  mtu: 0
+  node_selector: {}
+  update_strategy: null
+  tolerations: []
+authentication:
+  strategy: x509
+  sans: []
+  webhook: null
+addons: &quot;&quot;
+addons_include: []
+system_images:
+  etcd: rancher/mirrored-coreos-etcd:v3.5.3
+  alpine: rancher/rke-tools:v0.1.80
+  nginx_proxy: rancher/rke-tools:v0.1.80
+  cert_downloader: rancher/rke-tools:v0.1.80
+  kubernetes_services_sidecar: rancher/rke-tools:v0.1.80
+  kubedns: rancher/mirrored-k8s-dns-node-cache:1.21.1
+  dnsmasq: rancher/mirrored-k8s-dns-dnsmasq-nanny:1.21.1
+  kubedns_sidecar: rancher/mirrored-k8s-dns-sidecar:1.21.1
+  kubedns_autoscaler: rancher/mirrored-cluster-proportional-autoscaler:1.8.5
+  coredns: rancher/mirrored-coredns-coredns:1.9.0
+  coredns_autoscaler: rancher/mirrored-cluster-proportional-autoscaler:1.8.5
+  nodelocal: rancher/mirrored-k8s-dns-node-cache:1.21.1
+  kubernetes: registry.cn-hangzhou.aliyuncs.com/rancher/hyperkube:v1.23.6-rancher1
+  flannel: rancher/mirrored-coreos-flannel:v0.15.1
+  flannel_cni: rancher/flannel-cni:v0.3.0-rancher6
+  calico_node: rancher/mirrored-calico-node:v3.22.0
+  calico_cni: rancher/mirrored-calico-cni:v3.22.0
+  calico_controllers: rancher/mirrored-calico-kube-controllers:v3.22.0
+  calico_ctl: rancher/mirrored-calico-ctl:v3.22.0
+  calico_flexvol: rancher/mirrored-calico-pod2daemon-flexvol:v3.22.0
+  canal_node: rancher/mirrored-calico-node:v3.22.0
+  canal_cni: rancher/mirrored-calico-cni:v3.22.0
+  canal_controllers: rancher/mirrored-calico-kube-controllers:v3.22.0
+  canal_flannel: rancher/mirrored-flannelcni-flannel:v0.17.0
+  canal_flexvol: rancher/mirrored-calico-pod2daemon-flexvol:v3.22.0
+  weave_node: weaveworks/weave-kube:2.8.1
+  weave_cni: weaveworks/weave-npc:2.8.1
+  pod_infra_container: rancher/mirrored-pause:3.6
+  ingress: rancher/nginx-ingress-controller:nginx-1.2.0-rancher1
+  ingress_backend: rancher/mirrored-nginx-ingress-controller-defaultbackend:1.5-rancher1
+  ingress_webhook: rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.1.1
+  metrics_server: rancher/mirrored-metrics-server:v0.6.1
+  windows_pod_infra_container: rancher/mirrored-pause:3.6
+  aci_cni_deploy_container: noiro/cnideploy:5.1.1.0.1ae238a
+  aci_host_container: noiro/aci-containers-host:5.1.1.0.1ae238a
+  aci_opflex_container: noiro/opflex:5.1.1.0.1ae238a
+  aci_mcast_container: noiro/opflex:5.1.1.0.1ae238a
+  aci_ovs_container: noiro/openvswitch:5.1.1.0.1ae238a
+  aci_controller_container: noiro/aci-containers-controller:5.1.1.0.1ae238a
+  aci_gbp_server_container: noiro/gbp-server:5.1.1.0.1ae238a
+  aci_opflex_server_container: noiro/opflex-server:5.1.1.0.1ae238a
+ssh_key_path: ~/.ssh/id_rsa
+ssh_cert_path: &quot;&quot;
+ssh_agent_auth: false
+authorization:
+  mode: rbac
+  options: {}
+ignore_docker_version: null
+enable_cri_dockerd: null
+kubernetes_version: &quot;&quot;
+private_registries: []
+ingress:
+  provider: nginx
+  network_mode: hostNetwork
+  use-forwarded-headers: &apos;true&apos;
+  options: {}
+  node_selector:
+    app: ingress
+  extra_args: {}
+  dns_policy: &quot;&quot;
+  extra_envs: []
+  extra_volumes: []
+  extra_volume_mounts: []
+  update_strategy: null
+  http_port: 0
+  https_port: 0
+  tolerations: []
+  default_backend: null
+  default_http_backend_priority_class_name: &quot;&quot;
+  nginx_ingress_controller_priority_class_name: &quot;&quot;
+  default_ingress_class: null
+cluster_name: &quot;&quot;
+cloud_provider:
+  name: &quot;&quot;
+prefix_path: &quot;&quot;
+win_prefix_path: &quot;&quot;
+addon_job_timeout: 0
+bastion_host:
+  address: &quot;&quot;
+  port: &quot;&quot;
+  user: &quot;&quot;
+  ssh_key: &quot;&quot;
+  ssh_key_path: &quot;&quot;
+  ssh_cert: &quot;&quot;
+  ssh_cert_path: &quot;&quot;
+  ignore_proxy_env_vars: false
+monitoring:
+  provider: &quot;&quot;
+  options: {}
+  node_selector: {}
+  update_strategy: null
+  replicas: null
+  tolerations: []
+  metrics_server_priority_class_name: &quot;&quot;
+restore:
+  restore: false
+  snapshot_name: &quot;&quot;
+rotate_encryption_key: false
+dns: null
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;启动集群&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;rke up --config cluster.yml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;更新集群&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;rke up --update-only --config cluster.yml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;验证-kubernete-集群&quot;&gt;验证 kubernete 集群&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;安装 kubectl 工具&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo wget -O /usr/local/bin/kubectl  https://rancher-mirror.rancher.cn/kubectl/v1.23.6/linux-amd64-v1.23.6-kubectl
+sudo chown vagrant.vagrant /usr/local/bin/kubectl
+sudo chmod +x /usr/local/bin/kubectl
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;配置认证文件&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mkdir -pv ~/.kube
+cp kube_config_cluster.yml ~/.kube/config
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;查看资源详情&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+kubectl  get nodes
+NAME           STATUS   ROLES                      AGE   VERSION
+rke-master-1   Ready    controlplane,etcd,worker   10m   v1.23.6
+rke-master-2   Ready    controlplane,etcd,worker   10m   v1.23.6
+rke-master-3   Ready    controlplane,etcd,worker   10m   v1.23.6
+rke-worker-1   Ready    worker                     10m   v1.23.6
+rke-worker-2   Ready    worker                     10m   v1.23.6
+
+kubectl  get pods -A
+NAMESPACE       NAME                                      READY   STATUS      RESTARTS   AGE
+ingress-nginx   ingress-nginx-admission-create-82prb      0/1     Completed   0          9m37s
+ingress-nginx   ingress-nginx-admission-patch-x6zk5       0/1     Completed   3          9m37s
+ingress-nginx   nginx-ingress-controller-p6z77            1/1     Running     0          9m37s
+ingress-nginx   nginx-ingress-controller-zpdct            1/1     Running     0          9m37s
+kube-system     calico-kube-controllers-fc7fcb565-bt6fp   1/1     Running     0          9m56s
+kube-system     canal-27btn                               2/2     Running     0          9m56s
+kube-system     canal-d6tff                               2/2     Running     0          9m57s
+kube-system     canal-htqtg                               2/2     Running     0          9m56s
+kube-system     canal-tg4wq                               2/2     Running     0          9m56s
+kube-system     canal-zn8gr                               2/2     Running     0          9m56s
+kube-system     coredns-548ff45b67-4d4mv                  1/1     Running     0          8m42s
+kube-system     coredns-548ff45b67-llqkk                  1/1     Running     0          9m47s
+kube-system     coredns-autoscaler-d5944f655-5rrmn        1/1     Running     0          9m47s
+kube-system     metrics-server-5c4895ffbd-ws8mx           1/1     Running     0          9m42s
+kube-system     rke-coredns-addon-deploy-job-rvmp5        0/1     Completed   0          9m49s
+kube-system     rke-ingress-controller-deploy-job-sczs5   0/1     Completed   0          9m39s
+kube-system     rke-metrics-addon-deploy-job-79mth        0/1     Completed   0          9m44s
+kube-system     rke-network-plugin-deploy-job-vwjhc       0/1     Completed   0          9m59s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;部署应用&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create deployment myapp --image=ikubernetes/myapp:v1 --replicas=3
+kubectl  expose deployment myapp --port=80 --target-port=80 --type=ClusterIP
+
+~]$ kubectl  get all   -o wide
+NAME                        READY   STATUS    RESTARTS   AGE     IP          NODE           NOMINATED NODE   READINESS GATES
+pod/myapp-9cbc4cf76-6g7gz   1/1     Running   0          2m26s   10.42.0.2   rke-master-3   &amp;lt;none&amp;gt;           &amp;lt;none&amp;gt;
+pod/myapp-9cbc4cf76-b4vtp   1/1     Running   0          2m26s   10.42.1.3   rke-master-2   &amp;lt;none&amp;gt;           &amp;lt;none&amp;gt;
+pod/myapp-9cbc4cf76-cp85t   1/1     Running   0          2m26s   10.42.2.3   rke-master-1   &amp;lt;none&amp;gt;           &amp;lt;none&amp;gt;
+
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE    SELECTOR
+service/kubernetes   ClusterIP   10.43.0.1       &amp;lt;none&amp;gt;        443/TCP   16m    &amp;lt;none&amp;gt;
+service/myapp        ClusterIP   10.43.222.216   &amp;lt;none&amp;gt;        80/TCP    103s   app=myapp
+
+NAME                    READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS   IMAGES                 SELECTOR
+deployment.apps/myapp   3/3     3            3           2m26s   myapp        ikubernetes/myapp:v1   app=myapp
+
+NAME                              DESIRED   CURRENT   READY   AGE     CONTAINERS   IMAGES                 SELECTOR
+replicaset.apps/myapp-9cbc4cf76   3         3         3       2m26s   myapp        ikubernetes/myapp:v1   app=myapp,pod-template-hash=9cbc4cf76
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;[vagrant@rke-master-1 ~]$  curl 10.42.0.2
+Hello MyApp | Version: v1 | &amp;lt;a href=&quot;hostname.html&quot;&amp;gt;Pod Name&amp;lt;/a&amp;gt;
+[vagrant@rke-master-1 ~]$ curl 10.42.1.3
+Hello MyApp | Version: v1 | &amp;lt;a href=&quot;hostname.html&quot;&amp;gt;Pod Name&amp;lt;/a&amp;gt;
+[vagrant@rke-master-1 ~]$ curl 10.42.2.3
+Hello MyApp | Version: v1 | &amp;lt;a href=&quot;hostname.html&quot;&amp;gt;Pod Name&amp;lt;/a&amp;gt;
+[vagrant@rke-master-1 ~]$ curl 10.43.222.216
+Hello MyApp | Version: v1 | &amp;lt;a href=&quot;hostname.html&quot;&amp;gt;Pod Name&amp;lt;/a&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;~]$ kubectl  exec -it pod/myapp-9cbc4cf76-6g7gz -- nslookup myapp
+nslookup: can&apos;t resolve &apos;(null)&apos;: Name does not resolve
+
+Name:      myapp
+Address 1: 10.43.222.216 myapp.default.svc.cluster.local
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;参考&quot;&gt;参考&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;调优: https://docs.rancher.cn/docs/rancher2/best-practices/optimize/os/_index&lt;/li&gt;
+  &lt;li&gt;国内: https://docs.rancher.cn/docs/rancher2/best-practices/use-in-china/_index&lt;/li&gt;
+  &lt;li&gt;Kubernetes 集群设置: https://docs.rancher.cn/docs/rke/config-options/_index/&lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Sat, 28 May 2022 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2022/05/Install-Kubernetes-with-RKE/</link>
+        <guid isPermaLink="true">http://localhost:4000/2022/05/Install-Kubernetes-with-RKE/</guid>
+        
+        <category>rke</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>博客模板功能介绍</title>
+        <description>&lt;p&gt;在此之前我有写过一篇&lt;a href=&quot;http://leopardpan.cn/2016/10/jekyll_tutorials1/&quot;&gt;如何使用我博客模板的文章&lt;/a&gt; 请先看这篇基础集成，这篇文章主要讲的是如何使用和修改我的博客主题，文章内容含以下几点：&lt;/p&gt;
+
+&lt;h2 id=&quot;博客特性&quot;&gt;博客特性&lt;/h2&gt;
+
+&lt;ul class=&quot;task-list&quot;&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;适配电脑、手机、平板等各屏幕&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;响应式设计&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;个性化头像&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;每篇文章自动添加打赏功能&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;支持Disqus、livere评论系统&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;支持站点总数访问统计，每篇文章访问统计&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;支持文章自动生成目录&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;支持标签分类&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;支持代码高亮&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;支持文章H1、H2、H3、H4标题样式多样化&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;支持多种三方社交icon展示，能从博客直接跳转到自己的三方社交主页&lt;/li&gt;
+  &lt;li class=&quot;task-list-item&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;task-list-item-checkbox&quot; disabled=&quot;disabled&quot; checked=&quot;checked&quot; /&gt;支持三方社交分享(facebook、twitter)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;博客主要模块介绍&quot;&gt;博客主要模块介绍&lt;/h2&gt;
+
+&lt;h3 id=&quot;_configyml&quot;&gt;_config.yml&lt;/h3&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_config.yml&lt;/code&gt; 是博客的配置文件，整个站点的信息都在这修改，想要把我的模板改成你自己的也需要修改&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_config.yml&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;重要字段说明&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;enableToc: 是否开启文章自动生成目录，设置为false文章不会自动生成目录&lt;/li&gt;
+  &lt;li&gt;comment/livere: livere评论系统，支持微信、qq、微博、豆瓣、twitter等登录后可以直接评论&lt;/li&gt;
+  &lt;li&gt;comment/disqus: disqus评论系统，支持facebook、twitter等登录后可以直接评论&lt;/li&gt;
+  &lt;li&gt;social/weibo、github、zhihu、jianshu等: 个人站底部展示的微博等三方社交按钮，点击后直接跳转到个人微博或其他社交主页&lt;/li&gt;
+  &lt;li&gt;baidu/id: 百度统计，用来统计你个人站点的用户访问情况&lt;/li&gt;
+  &lt;li&gt;ga/id: google统计，用来统计你个人站点的用户访问情况&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;_config.yml 文件除以上字段还有一些可以自行修改，例如title之类的字段&lt;/p&gt;
+
+&lt;h3 id=&quot;_posts&quot;&gt;_posts&lt;/h3&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_posts&lt;/code&gt; 目录是用来存放文章的目录，写新文章，直接放在这个目录即可&lt;/p&gt;
+
+&lt;p&gt;使用博客模板时，请把博客自带的文章给去掉，如果想使用博客自带的文章请 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;注明出处&lt;/code&gt;。&lt;/p&gt;
+
+&lt;h3 id=&quot;自定义页面&quot;&gt;自定义页面&lt;/h3&gt;
+
+&lt;p&gt;about.md、support.md 等为自定义页面，如果你想添加自动以页面可以直接复制about.md 文件修改文件名和里面的内容即可。&lt;/p&gt;
+
+&lt;p&gt;如果需要在导航显示你新增的页面，直接在&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_config.yml&lt;/code&gt; 文件的nav字段中添加你新页面配置即可&lt;/p&gt;
+
+&lt;h3 id=&quot;修改说明&quot;&gt;修改说明&lt;/h3&gt;
+
+&lt;p&gt;如果要修改博客模板信息建议只修改&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_config.yml&lt;/code&gt; 文件内容和 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_posts&lt;/code&gt; 里面的文章信息。因为博客模板一直在更新迭代，改动多了以免你后期更新博客模板的时候不方便。&lt;/p&gt;
+
+&lt;p&gt;如果你想改动模板的样式又想继续更新迭代博客模板，你可以提交在github上提交&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pull request&lt;/code&gt; 或者直接给我发邮件建议改成什么样，如果你的提议确实可以，我会采纳的，并且非常感谢你的建议。&lt;/p&gt;
+
+&lt;p&gt;博客迭代信息请看&lt;a href=&quot;http://leopardpan.cn/2020/07/ReleaseNode/&quot;&gt;ReleaseNode&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;遇到解决不了的问题可以找 &lt;a href=&quot;http://leopardpan.cn/support/&quot;&gt;技术支持&lt;/a&gt;&lt;/p&gt;
+
+</description>
+        <pubDate>Sat, 11 Jul 2020 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2020/07/blog_info/</link>
+        <guid isPermaLink="true">http://localhost:4000/2020/07/blog_info/</guid>
+        
+        <category>jekyll</category>
+        
+        
+      </item>
+    
+  </channel>
+</rss>
