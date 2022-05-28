@@ -1,0 +1,12 @@
+I":
+<ul>
+  <li><a href="#系统环境介绍">系统环境介绍</a></li>
+  <li><a href="#virtualbox-新建虚拟机">VirtualBox 新建虚拟机</a></li>
+  <li><a href="#配置账户">配置账户</a></li>
+  <li><a href="#配置yum源">配置Yum源</a></li>
+  <li><a href="#安装-vitualbox-additions">安装 VitualBox additions</a></li>
+  <li><a href="#清理缓存数据">清理缓存数据</a></li>
+  <li><a href="#虚拟机-打包为-vagrant-box">虚拟机 打包为 vagrant box</a></li>
+  <li><a href="#测试启动虚拟机啊">测试启动虚拟机啊</a></li>
+</ul>
+:ET

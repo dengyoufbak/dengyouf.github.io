@@ -1,4 +1,4 @@
-I"y*<h2 id="前置条件">前置条件</h2>
+I"o+<h2 id="前置条件">前置条件</h2>
 
 <blockquote>
   <p>在一个准备好的 Kubernetes 集群中安装 Rancher v2.6.5 UI</p>
@@ -282,7 +282,9 @@ stream {
   <p>https://rancher-ui.linux.io/dashboard/?setup=</p>
 </blockquote>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='\n'
+<div class="language-latex highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">\newcommand\abc</span><span class="p">{</span><span class="c">%</span>
+./kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='<span class="p">{{</span>.data.bootstrapPassword|base64decode<span class="p">}}{{</span>"<span class="k">\n</span>"<span class="p">}}</span>'
+<span class="p">}</span>
 </code></pre></div></div>
 
 <h2 id="参考">参考</h2>

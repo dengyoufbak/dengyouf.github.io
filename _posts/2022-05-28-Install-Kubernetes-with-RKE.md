@@ -1,6 +1,6 @@
 ---
 layout: post
-title: RKE 构建高可用的 KUBERNETES 集群
+title: 基于RKE构建高可用Kubernetes集群
 tag: RKE
 ---
 ## RKE 概述

@@ -5,8 +5,8 @@
     <description>欢迎来到我的个人站~</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 28 May 2022 22:57:55 +0800</pubDate>
-    <lastBuildDate>Sat, 28 May 2022 22:57:55 +0800</lastBuildDate>
+    <pubDate>Sat, 28 May 2022 23:42:00 +0800</pubDate>
+    <lastBuildDate>Sat, 28 May 2022 23:42:00 +0800</lastBuildDate>
     <generator>Jekyll v4.2.2</generator>
     
       <item>
@@ -320,7 +320,7 @@ stream {
       </item>
     
       <item>
-        <title>RKE 构建高可用的 KUBERNETES 集群</title>
+        <title>基于RKE构建高可用Kubernetes集群</title>
         <description>&lt;h2 id=&quot;rke-概述&quot;&gt;RKE 概述&lt;/h2&gt;
 
 &lt;blockquote&gt;
@@ -1028,6 +1028,779 @@ Address 1: 10.43.222.216 myapp.default.svc.cluster.local
       </item>
     
       <item>
+        <title>Vagrant 制作自己的 Box 虚拟机镜像</title>
+        <description>&lt;h2 id=&quot;系统环境介绍&quot;&gt;系统环境介绍&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Iso镜像: CentOS-7-x86_64-Minimal-2009.iso&lt;/li&gt;
+  &lt;li&gt;VirtualBox 版本: 6.1.34&lt;/li&gt;
+  &lt;li&gt;Vagrant 版本: 2.2.19&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;virtualbox-新建虚拟机&quot;&gt;VirtualBox 新建虚拟机&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;内存：2C/4096G&lt;/li&gt;
+  &lt;li&gt;硬盘：
+    &lt;ul&gt;
+      &lt;li&gt;系统盘：50G&lt;/li&gt;
+      &lt;li&gt;数据盘：100G&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;声音、USB： 禁用&lt;/li&gt;
+  &lt;li&gt;网络： 网络地址转换（NAT)&lt;/li&gt;
+  &lt;li&gt;端口转发 -&amp;gt; ssh 宿主机：127.0.0.1 2222 =&amp;gt; 虚拟机：（空） 22&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/pic/vagrant1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;配置账户&quot;&gt;配置账户&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;设置 sshd 远程登录&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+sed -i &apos;s/#UseDNS no/UseDNS no/g&apos; /etc/ssh/sshd_config
+sed -i &apos;s/#GSSAPIAuthentication no/GSSAPIAuthentication no/g&apos; /etc/ssh/sshd_config
+sed -i &apos;s@PasswordAuthentication no@PasswordAuthentication yes@g&apos; /etc/ssh/sshd_config
+sed -i &apos;s@#PermitRootLogin yes@PermitRootLogin yes@g&apos; /etc/ssh/sshd_config
+systemctl reload sshd
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;vagrant sudo 免密登陆&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+useradd vagrant
+echo &quot;vagrant&quot;|passwd --stdin vagrant
+echo &quot;vagrant  ALL=(ALL)       NOPASSWD: ALL&quot; &amp;gt;&amp;gt; /etc/sudoers.d/vagrant
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;安装 Vagrant 密钥&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+su - vagrant
+mkdir .ssh &amp;amp;&amp;amp; chmod 0700 .ssh
+wget --no-check-certificate \
+    https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub \
+    -O /home/vagrant/.ssh/authorized_keys
+
+}
+chmod 0600 .ssh/authorized_keys
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;配置yum源&quot;&gt;配置Yum源&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+mkdir /etc/yum.repos.d/bak
+mv /etc/yum.repos.d/*  /etc/yum.repos.d/bak
+curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
+yum install epel-release
+}
+{
+yum clean all
+yum makecache
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;安装-vitualbox-additions&quot;&gt;安装 VitualBox additions&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;安装编译工具&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+yum -y groupinstall Development tools
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;安装软件包&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+yum -y install xorg-x11-drivers xorg-x11-utils
+yum install -y perl gcc dkms kernel-devel kernel-headers make bzip2
+yum install -y vim wget lrzsz net-tools
+reboot
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;加载 Guest Additions CD Image 镜像&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/pic/vagrant2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+mkdir -p /tmp/cdrom &amp;amp;&amp;amp; mount /dev/cdrom /tmp/cdrom
+sh /tmp/cdrom/VBoxLinuxAdditions.run
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;清理缓存数据&quot;&gt;清理缓存数据&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;yum  clean all
+init 0
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;虚拟机-打包为-vagrant-box&quot;&gt;虚拟机 打包为 vagrant box&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mkdir centos7-2009 &amp;amp;&amp;amp; cd centos7-2009 
+# centos7 为虚拟机的名字
+vagrant package --output centos7-9.box --base centos7
+==&amp;gt; centos7: Clearing any previously set forwarded ports...
+==&amp;gt; centos7: Exporting VM...
+==&amp;gt; centos7: Compressing package to: /Users/dengyou/Vagrant_Pro/centos7-2009/centos7-9.box
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;测试启动虚拟机啊&quot;&gt;测试启动虚拟机啊&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;vagrant box add dengyouf/CentOS-7.9 centos7-9.box
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Vagrant.configure(&quot;2&quot;) do |config|
+   (1..2).each do |i|
+        config.vm.define &quot;node#{i}&quot; do |node|
+            # 设置虚拟机的Box
+            node.vm.box = &quot;dengyouf/CentOS-7.9&quot;
+
+            # 设置虚拟机的主机名
+            node.vm.hostname=&quot;centos-node#{i}&quot;
+
+            # 设置虚拟机的IP
+            node.vm.network &quot;private_network&quot;, ip: &quot;192.168.56.#{100+i}&quot;
+
+            # 设置主机与虚拟机的共享目录
+            node.vm.synced_folder &quot;.&quot;, &quot;/home/vagrant/share&quot;
+
+            # VirtaulBox相关配置
+            node.vm.provider &quot;virtualbox&quot; do |v|
+                # 设置虚拟机的名称
+                v.name = &quot;centos-node#{i}&quot;
+                # 设置虚拟机的内存大小
+                v.memory = 4096
+                # 设置虚拟机的CPU个数
+                v.cpus = 2
+            end
+        end
+        config.vm.provision &quot;shell&quot;, inline: &amp;lt;&amp;lt;-SCRIPT
+          {
+          sudo mkdir -p /data
+          sudo mkfs.ext4 -F /dev/sdb
+          UUID=$(sudo blkid -s UUID /dev/sdb|awk -F&quot;:&quot; &apos;{print $2}&apos;| tr -d &apos;&quot;&apos;)
+          TYPE=$(sudo blkid  -s TYPE /dev/sdb|awk  -F&quot;=&quot; &apos;{print $NF}&apos;|tr -d &apos;&quot;&apos;)
+          echo -e &quot;$UUID\t/data\t$TYPE\tdefaults\t0 0&quot;|sudo tee -a /etc/fstab
+          sudo mount -a
+          }
+        SCRIPT
+        # 执行初始化脚本
+        #config.vm.provision &quot;shell&quot;, path: &quot;bootstrap.sh&quot;
+   end
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;vagrant status                                               
+Current machine states:
+
+node1                     running (virtualbox)
+node2                     running (virtualbox)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;vagrant ssh-config
+Host node1
+  HostName 127.0.0.1
+  User vagrant
+  Port 2222
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile /Users/dengyou/Vagrant_Pro/centos7-2009/.vagrant/machines/node1/virtualbox/private_key
+  IdentitiesOnly yes
+  LogLevel FATAL
+
+Host node2
+  HostName 127.0.0.1
+  User vagrant
+  Port 2200
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile /Users/dengyou/Vagrant_Pro/centos7-2009/.vagrant/machines/node2/virtualbox/private_key
+  IdentitiesOnly yes
+  LogLevel FATAL
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+</description>
+        <pubDate>Sun, 22 May 2022 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2022/05/Vagrant-create-box/</link>
+        <guid isPermaLink="true">http://localhost:4000/2022/05/Vagrant-create-box/</guid>
+        
+        <category>VAGRANT</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>基于Kubeadm搭建Kubernetes集群</title>
+        <description>&lt;h2 id=&quot;主机规划&quot;&gt;主机规划&lt;/h2&gt;
+
+&lt;p&gt;使用 kubeadm 初始化 kubernetes 集群，操作系统为 CentOS 7.6.1810 x86_64，用到的各相关程序版本如下：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;ubuntu: v18.04.6 LTS&lt;/li&gt;
+  &lt;li&gt;kubeadm: v1.22.6&lt;/li&gt;
+  &lt;li&gt;docker: v20.10.6&lt;/li&gt;
+  &lt;li&gt;flannel: v1.0.1&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;主机名&lt;/th&gt;
+      &lt;th&gt;IP 地址&lt;/th&gt;
+      &lt;th&gt;配置&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;kubeadm-master-01&lt;/td&gt;
+      &lt;td&gt;192.168.124.200&lt;/td&gt;
+      &lt;td&gt;8GB Ram, 2vcpus&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;kubeadm-node-01&lt;/td&gt;
+      &lt;td&gt;192.168.124.211&lt;/td&gt;
+      &lt;td&gt;8GB Ram, 2vcpus&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;kubeadm-node-02&lt;/td&gt;
+      &lt;td&gt;192.168.124.212&lt;/td&gt;
+      &lt;td&gt;8GB Ram, 2vcpus&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;kubeadm-node-03&lt;/td&gt;
+      &lt;td&gt;192.168.124.212&lt;/td&gt;
+      &lt;td&gt;8GB Ram, 2vcpus&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&quot;准备&quot;&gt;准备&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;升级软件包&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt update
+apt -y upgrade
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;主机名解析&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cat &amp;gt;&amp;gt; /etc/hosts &amp;lt;&amp;lt;EOF
+
+192.168.124.200 kubeadm-master-01
+192.168.124.211 kubeadm-node-01
+192.168.124.212 kubeadm-node-02
+192.168.124.213 kubeadm-node-03
+
+# 用来扩展集群为高可用集群
+192.168.124.200 kubeadm-vip.linux.io
+EOF
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;时间同步&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+apt install ntpdate -y
+ntpdate time1.aliyun.com
+echo &quot;*/3 * * * * /usr/sbin/ntpdate time1.aliyun.com &amp;amp;&amp;gt; /dev/null&quot; &amp;gt;&amp;gt; /var/spool/cron/crontabs/root
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;关闭防火墙和 swap 分区&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ufw disable
+sed -i &apos;s@^/swap@# &amp;amp;1@g&apos; /etc/fstab  &amp;amp;&amp;amp; swapoff  -a
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;调整内核参数&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;modprobe overlay &amp;amp;&amp;amp; modprobe br_netfilter
+
+cat &amp;gt;&amp;gt; /etc/sysctl.d/99-kubernetes-cri.conf &amp;lt;&amp;lt; EOF
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+user.max_user_namespaces=28633
+vm.swappiness=0
+EOF
+
+sysctl  --system
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;配置 ipvs 功能&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt install ipvsadm ipset -y
+
+modprobe ip_vs &amp;amp;&amp;amp; modprobe ip_vs_rr &amp;amp;&amp;amp; modprobe ip_vs_wrr &amp;amp;&amp;amp; modprobe ip_vs_sh
+cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; /etc/modules
+ip_vs_rr
+ip_vs_wrr
+ip_vs_sh
+ip_vs
+EOF
+
+reboot
+
+lsmod | grep -e ip_vs -e nf_conntrack_ipv4
+ip_vs_sh               16384  0
+ip_vs_wrr              16384  0
+ip_vs_rr               16384  0
+ip_vs                 151552  6 ip_vs_rr,ip_vs_sh,ip_vs_wrr
+nf_defrag_ipv6         20480  1 ip_vs
+nf_conntrack          135168  1 ip_vs
+libcrc32c              16384  4 nf_conntrack,xfs,raid456,ip_vs
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;安装容器运行时&quot;&gt;安装容器运行时&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt-get remove docker docker-engine docker.io
+apt-get install apt-transport-https ca-certificates curl gnupg2 software-properties-common
+
+curl -fsSL https://repo.huaweicloud.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
+
+add-apt-repository &quot;deb [arch=amd64] https://repo.huaweicloud.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable&quot;
+
+apt update
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt-cache madison docker-ce
+apt install docker-ce=5:20.10.6~3-0~ubuntu-bionic -y
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mkdir /etc/docker
+cat &amp;gt;&amp;gt; /etc/docker/daemon.json &amp;lt;&amp;lt; EOF 
+{
+    &quot;registry-mirrors&quot;: [&quot;https://o4uba187.mirror.aliyuncs.com&quot;],
+    &quot;exec-opts&quot;: [&quot;native.cgroupdriver=systemd&quot;],
+    &quot;log-driver&quot;: &quot;json-file&quot;,
+    &quot;log-opts&quot;: {
+    &quot;max-size&quot;: &quot;100m&quot;
+    },
+    &quot;storage-driver&quot;: &quot;overlay2&quot;,
+    &quot;graph&quot;:  &quot;/var/lib/docker&quot;
+}
+EOF
+
+systemctl  enable docker --now
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;安装-kubeadm&quot;&gt;安装 Kubeadm&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt-get update &amp;amp;&amp;amp; apt-get install -y apt-transport-https
+curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add - 
+cat &amp;lt;&amp;lt;EOF &amp;gt;/etc/apt/sources.list.d/kubernetes.list
+deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
+EOF
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt-get update 
+apt-get install kubeadm=1.22.5-00 kubelet=1.22.5-00 kubectl=1.22.5-00 
+systemctl enable kubelet.service
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;初始化-master-节点&quot;&gt;初始化 Master 节点&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubeadm init --kubernetes-version=v1.22.5 \
+    --control-plane-endpoint=kubeadm-vip.linux.io \
+    --apiserver-advertise-address=0.0.0.0 \
+    --pod-network-cidr=10.244.0.0/16   \
+    --service-cidr=10.96.0.0/12 \
+    --image-repository=registry.cn-hangzhou.aliyuncs.com/google_containers \
+    --ignore-preflight-errors=Swap | tee kubeadm-init.log
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run &quot;kubectl apply -f [podnetwork].yaml&quot; with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+You can now join any number of control-plane nodes by copying certificate authorities
+and service account keys on each node and then running the following as root:
+
+  kubeadm join kubeadm-vip.linux.io:6443 --token pa5fyb.mcoy474qbznp8cvd \
+	--discovery-token-ca-cert-hash sha256:5c1deff287d32725b8c3eaab49a32afc4f046ff1514056b15f11535c1fb45df5 \
+	--control-plane
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join kubeadm-vip.linux.io:6443 --token pa5fyb.mcoy474qbznp8cvd \
+	--discovery-token-ca-cert-hash sha256:5c1deff287d32725b8c3eaab49a32afc4f046ff1514056b15f11535c1fb45df5
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;部署-flannel&quot;&gt;部署 Flannel&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;join-worker-节点&quot;&gt;Join worker 节点&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubeadm join kubeadm-vip.linux.io:6443 --token pa5fyb.mcoy474qbznp8cvd \
+	--discovery-token-ca-cert-hash sha256:5c1deff287d32725b8c3eaab49a32afc4f046ff1514056b15f11535c1fb45df5
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;启用-ipvs-模式&quot;&gt;启用 IPVS 模式&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl  edit cm kube-proxy -n kube-system
+    mode: &quot;ipvs&quot; 
+
+kubectl  delete pod -n kube-system -l k8s-app=kube-proxy
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ipvsadm -Ln
+IP Virtual Server version 1.2.1 (size=4096)
+Prot LocalAddress:Port Scheduler Flags
+  -&amp;gt; RemoteAddress:Port           Forward Weight ActiveConn InActConn
+TCP  10.96.0.1:443 rr
+  -&amp;gt; 192.168.124.200:6443         Masq    1      0          0
+TCP  10.96.0.10:53 rr
+  -&amp;gt; 10.244.0.2:53                Masq    1      0          0
+  -&amp;gt; 10.244.0.3:53                Masq    1      0          0
+TCP  10.96.0.10:9153 rr
+  -&amp;gt; 10.244.0.2:9153              Masq    1      0          0
+  -&amp;gt; 10.244.0.3:9153              Masq    1      0          0
+UDP  10.96.0.10:53 rr
+  -&amp;gt; 10.244.0.2:53                Masq    1      0          0
+  -&amp;gt; 10.244.0.3:53                Masq    1      0          0
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;验证集群&quot;&gt;验证集群&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl  create deployment myapp --image=ikubernetes/myapp:v1 --replicas=3
+kubectl  expose deployment  myapp  --port=80 --target-port=80
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl  get pod -o wide &amp;amp;&amp;amp; kubectl get svc
+NAME                    READY   STATUS    RESTARTS   AGE   IP           NODE              NOMINATED NODE   READINESS GATES
+myapp-7d4b7b84b-98cx7   1/1     Running   0          83s   10.244.3.3   kubeadm-node-03   &amp;lt;none&amp;gt;           &amp;lt;none&amp;gt;
+myapp-7d4b7b84b-pfkqq   1/1     Running   0          83s   10.244.2.3   kubeadm-node-02   &amp;lt;none&amp;gt;           &amp;lt;none&amp;gt;
+myapp-7d4b7b84b-zg5dc   1/1     Running   0          83s   10.244.1.4   kubeadm-node-01   &amp;lt;none&amp;gt;           &amp;lt;none&amp;gt;
+NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1      &amp;lt;none&amp;gt;        443/TCP   60m
+myapp        ClusterIP   10.101.62.58   &amp;lt;none&amp;gt;        80/TCP    2m40s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl  exec -it myapp-7d4b7b84b-98cx7 -- wget -O  - 10.244.1.4
+Connecting to 10.244.1.4 (10.244.1.4:80)
+Hello MyApp | Version: v1 | &amp;lt;a href=&quot;hostname.html&quot;&amp;gt;Pod Name&amp;lt;/a&amp;gt;
+
+kubectl  exec -it myapp-7d4b7b84b-98cx7 -- ping 192.168.124.212
+
+ kubectl  exec -it myapp-7d4b7b84b-98cx7 -- nslookup myapp
+nslookup: can&apos;t resolve &apos;(null)&apos;: Name does not resolve
+
+Name:      myapp
+Address 1: 10.101.62.58 myapp.default.svc.cluster.local
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+</description>
+        <pubDate>Wed, 11 May 2022 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2022/05/Install-Kubernetes-by-Kubeadm/</link>
+        <guid isPermaLink="true">http://localhost:4000/2022/05/Install-Kubernetes-by-Kubeadm/</guid>
+        
+        <category>KUBEADM</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Go开发环境搭建</title>
+        <description>&lt;h2 id=&quot;安装-go&quot;&gt;安装 &lt;a href=&quot;https://golang.google.cn/dl/&quot;&gt;Go&lt;/a&gt;&lt;/h2&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;tar&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-xf&lt;/span&gt; go1.16.4.darwin-amd64.tar.gz &lt;span class=&quot;nt&quot;&gt;-C&lt;/span&gt; ~/Applications/
+&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; ~/.zshrc
+&lt;span class=&quot;nv&quot;&gt;GOROOT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/Users/dengyou/Applications/go
+&lt;span class=&quot;nv&quot;&gt;PATH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$GOROOT&lt;/span&gt;/bin:&lt;span class=&quot;nv&quot;&gt;$GOPATH&lt;/span&gt;/bin/:&lt;span class=&quot;nv&quot;&gt;$PATH&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;go version
+go version go1.16.4 darwin/amd64
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mkdir -pv /Users/dengyou/Desktop/GitHub/LearnGolang/goproject/{src,bin,pkg}
+go env -w GOPATH=&quot;/Users/dengyou/Desktop/GitHub/LearnGolang/goproject&quot;
+go env -w GOBIN=&quot;$GOPATH/bin&quot;
+go env -w GOPROXY=https://goproxy.cn
+go env -w GO111MODULE=&quot;auto&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;安装-vscode&quot;&gt;安装 VSCODE&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://code.visualstudio.com/&quot;&gt;vscode官网下载&lt;/a&gt;最新版&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;安装 Go 语言扩展&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/pic/go-extension.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;安装 Go 语言扩展需要的工具集合&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// 这些扩展很多被墙了, 需要配置GOPROXY代理才能正常安装:
+go env -w GOPROXY=https://goproxy.cn
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;设置变量过后为了保证vscode能正常使用, 请重启vscode&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;table&gt;
+      &lt;tbody&gt;
+        &lt;tr&gt;
+          &lt;td&gt;打开命令面板: Shift + Command + P(mac)&lt;/td&gt;
+          &lt;td&gt;Shift + Ctrl + P(windows)&lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+  &lt;/li&gt;
+  &lt;li&gt;输入: Install/Update 搜索 Go扩展依赖工具安装命令&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/pic/vscode-command.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;勾选所有选项进行安装&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/pic/vscode-command2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;如果失败也可以手动安装&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;go install -v golang.org/x/tools/gopls@latest
+go install -v honnef.co/go/tools/cmd/staticcheck@latest
+go install -v github.com/go-delve/delve/cmd/dlv@latest
+go install -v github.com/haya14busa/goplay/cmd/goplay@latest
+go install -v github.com/josharian/impl@latest
+go install -v github.com/fatih/gomodifytags@latest
+go install -v github.com/cweill/gotests/gotests@latest
+go install -v github.com/ramya-rao-a/go-outline@latest
+go install -v github.com/uudashr/gopkgs/v2/cmd/gopkgs@latest
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;vscode-插件安装&quot;&gt;VSCODE 插件安装&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;单词拼写检查: Code Spell Checker&lt;/li&gt;
+  &lt;li&gt;快捷运行代码的插件: Code Runner&lt;/li&gt;
+  &lt;li&gt;最好用Git工具没有之一: Gitlens&lt;/li&gt;
+  &lt;li&gt;AI 代码生成: Tabnine AI Code&lt;/li&gt;
+  &lt;li&gt;设计配色方案: GapStyle VS&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;配置vscode打印run-test详情内容&quot;&gt;配置vscode打印run test详情内容&lt;/h2&gt;
+
+&lt;p&gt;通过修改 go.testFlags 的配置值为: [“-v”], 就开启了test 打印详细日志功能&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/pic/vscode-test-debug.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+    &quot;workbench.colorTheme&quot;: &quot;One Dark Pro&quot;,
+    &quot;terminal.integrated.shell.windows&quot;: &quot;C:\\Program Files\\Git\\bin\\bash.exe&quot;,
+    &quot;go.useLanguageServer&quot;: true,
+    &quot;explorer.confirmDelete&quot;: false,
+    &quot;explorer.confirmDragAndDrop&quot;: false,
+    &quot;workbench.iconTheme&quot;: &quot;vscode-icons&quot;,
+    &quot;vsicons.dontShowNewVersionMessage&quot;: true,
+    &quot;http.proxySupport&quot;: &quot;off&quot;,
+    &quot;go.toolsManagement.autoUpdate&quot;: true,
+    &quot;terminal.integrated.tabs.enabled&quot;: true,
+    &quot;terminal.integrated.defaultProfile.windows&quot;: &quot;Git Bash&quot;,
+    &quot;git.autofetch&quot;: true,
+    &quot;files.autoSave&quot;: &quot;afterDelay&quot;,
+    &quot;go.testFlags&quot;: [&quot;-v&quot;]
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+</description>
+        <pubDate>Tue, 10 May 2022 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2022/05/go-env-configure/</link>
+        <guid isPermaLink="true">http://localhost:4000/2022/05/go-env-configure/</guid>
+        
+        <category>Go</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>iTerm2+oh-my-zsh打造炫酷终端</title>
+        <description>&lt;h2 id=&quot;安装软件包&quot;&gt;安装软件包&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;安装 &lt;a href=&quot;http://iterm2.com/downloads.html&quot;&gt;iTerm2&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;安装 &lt;a href=&quot;https://ohmyz.sh/&quot;&gt;oh-my-zsh&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;修改默认 shell 为 zsh: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;chsh -s /bin/zsh&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;修改&lt;a href=&quot;https://github.com/ohmyzsh/ohmyzsh/wiki/themes&quot;&gt;默认主题&lt;/a&gt;：&lt;/p&gt;
+    &lt;ul&gt;
+      &lt;li&gt;cloud&lt;/li&gt;
+      &lt;li&gt;steeef&lt;/li&gt;
+      &lt;li&gt;agnosterzak&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;vim ~/.zshrc
+ZSH_THEME=&quot;agnoster&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;定制主题&quot;&gt;定制主题&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;下载第三方主题 &lt;a href=&quot;https://github.com/bhilburn/powerlevel9k.git&quot;&gt;powerlevel9k&lt;/a&gt; 到 oh-my-zsh 放置第三方主题的目录中&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone https://github.com/bhilburn/powerlevel9k.git ~/.oh-my-zsh/custom/themes/powerlevel9k
+echo &quot;source $ZSH/custom/themes/powerlevel9k/powerlevel9k.zsh-theme&quot; &amp;gt;&amp;gt; ~/.zshrc
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;配置主题&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;vim ~/.zshrc
+ZSH_THEME=&quot;powerlevel9k/powerlevel9k&quot;
+source ~/.zshrc
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;安装 &lt;a href=&quot;https://powerline.readthedocs.io/en/latest/installation.html&quot;&gt;powerline&lt;/a&gt; 插件&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;pip3 install powerline-status
+pip install powerline-status
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;安装&lt;a href=&quot;https://github.com/powerline/fonts.git&quot;&gt;PowerFonts&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone https://github.com/powerline/fonts.git --depth=1
+cd fonts &amp;amp;&amp;amp; ./install.sh
+cd .. &amp;amp;&amp;amp; rm -rf fonts
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;设置 iTerm2 的字体&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;具体的操作是 iTerm2 -&amp;gt; Preferences -&amp;gt; Profiles -&amp;gt; Text，在 Font 区域选中 Change Font，选择字体名字带有 for powerline 的&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/pic/powerline.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://iterm2colorschemes.com/&quot;&gt;色彩预设&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;选择 Preference -&amp;gt; Profiles -&amp;gt; Colors ，导入色彩主题，并勾上就可以&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;schemes&lt;/code&gt;: 放置色彩主题文件&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;screenshots&lt;/code&gt;:  色彩主题预设的预览图&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/pic/scheme.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone https://github.com/mbadolato/iTerm2-Color-Schemes ~/Downloads/itemcolor
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;命令补全插件&lt;a href=&quot;https://github.com/zsh-users/zsh-autosuggestions&quot;&gt;zsh-autosuggestion&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cd ~/.oh-my-zsh/custom/plugins/
+git clone https://github.com/zsh-users/zsh-autosuggestions
+vi ~/.zshrc
+plugins=(
+        zsh-autosuggestions
+        git
+)
+source ~/.zshrc
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;隐藏用户名和主机名&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;echo &quot;prompt_context() {}&quot; &amp;gt;&amp;gt; ~/.zshrc
+source ~/.zshrc
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;安装配色方案&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;在打开的finder窗口中，双击Solarized Dark.itermcolors和Solarized Light.itermcolors即可安装明暗两种配色&lt;/li&gt;
+      &lt;li&gt;进入iTerm2 -&amp;gt; Preferences -&amp;gt; Profiles -&amp;gt; Colors -&amp;gt; Color Presets中根据个人喜好选择这两种配色中的一种即可以&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mkdir ~/OpenSource &amp;amp;&amp;amp; cd ~/OpenSource
+git clone https://github.com/altercation/solarized
+cd solarized/iterm2-colors-solarized/
+open .
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+</description>
+        <pubDate>Sun, 08 May 2022 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2022/05/iterm2+ohmyzsh/</link>
+        <guid isPermaLink="true">http://localhost:4000/2022/05/iterm2+ohmyzsh/</guid>
+        
+        <category>Mac</category>
+        
+        
+      </item>
+    
+      <item>
         <title>博客模板功能介绍</title>
         <description>&lt;p&gt;在此之前我有写过一篇&lt;a href=&quot;http://leopardpan.cn/2016/10/jekyll_tutorials1/&quot;&gt;如何使用我博客模板的文章&lt;/a&gt; 请先看这篇基础集成，这篇文章主要讲的是如何使用和修改我的博客主题，文章内容含以下几点：&lt;/p&gt;
 
@@ -1091,10 +1864,10 @@ Address 1: 10.43.222.216 myapp.default.svc.cluster.local
 
 </description>
         <pubDate>Sat, 11 Jul 2020 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000/2020/07/blog_info/</link>
-        <guid isPermaLink="true">http://localhost:4000/2020/07/blog_info/</guid>
+        <link>http://localhost:4000/2020/07/blog-temp/</link>
+        <guid isPermaLink="true">http://localhost:4000/2020/07/blog-temp/</guid>
         
-        <category>jekyll</category>
+        <category>JEKYLL</category>
         
         
       </item>

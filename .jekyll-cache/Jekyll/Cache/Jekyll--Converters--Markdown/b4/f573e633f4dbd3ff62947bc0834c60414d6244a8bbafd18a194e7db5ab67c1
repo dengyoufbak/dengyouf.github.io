@@ -1,0 +1,13 @@
+I"
+<ul>
+  <li><a href="#主机规划">主机规划</a></li>
+  <li><a href="#准备">准备</a></li>
+  <li><a href="#安装容器运行时">安装容器运行时</a></li>
+  <li><a href="#安装-kubeadm">安装 Kubeadm</a></li>
+  <li><a href="#初始化-master-节点">初始化 Master 节点</a></li>
+  <li><a href="#部署-flannel">部署 Flannel</a></li>
+  <li><a href="#join-worker-节点">Join worker 节点</a></li>
+  <li><a href="#启用-ipvs-模式">启用 IPVS 模式</a></li>
+  <li><a href="#验证集群">验证集群</a></li>
+</ul>
+:ET
