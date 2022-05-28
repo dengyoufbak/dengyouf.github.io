@@ -278,8 +278,10 @@ docker run -d --restart=unless-stopped \
 
 > https://rancher-ui.linux.io/dashboard/?setup=
 
-```
+```latex
+{% raw %}\newcommand\abc{%
 ./kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}{{"\n"}}'
+}{% endraw %}
 ```
 
 ## 参考
