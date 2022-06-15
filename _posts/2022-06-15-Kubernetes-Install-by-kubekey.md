@@ -2,7 +2,7 @@
 layout: post
 title: 基于KubeKey安装Kubernetes集群
 date: 2020-07-11
-tags: JEKYLL
+tags: KUBEKEY
 ---
 
 ## 准备Linux主机
