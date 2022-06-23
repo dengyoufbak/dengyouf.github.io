@@ -97,6 +97,7 @@ Description=Node Exporter
 [Service]
 User=node_exporter
 ExecStart=/usr/local/node_exporter/node_exporter \
+    --collectors.enabled meminfo,loadavg,filesystem \
     --collector.textfile.directory /var/lib/node_exporter/textfile_collector
 
 [Install]
