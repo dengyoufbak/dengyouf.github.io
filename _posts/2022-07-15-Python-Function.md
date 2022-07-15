@@ -347,24 +347,11 @@ def sort(iterable, *, key=None, reverse=False):
             if x < y: # 
                 newlst.insert(i, x)
                 break
-        else:
-            newlst.append(x) 
-    return newlst
-```
-
-```
-# 实现逆序
-def sort(iterable, *, key=None, reverse=False):
-    newlst = []
-    for x in iterable:  
-        for i, y in enumerate(newlst):
-            if x < y: 
-                newlst.insert(i, x)
-                break
         else:  # 第一次为空列表，所以使用else子句
             newlst.append(x) 
     return newlst
 ```
+
 
 ```
 # 实现可逆序
