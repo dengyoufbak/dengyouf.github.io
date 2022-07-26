@@ -52,9 +52,9 @@ metadata:
   name: sample
 spec:
   hosts:
-  - {name: master, address: 192.168.0.11, internalAddress: 192.168.0.11, user: root, password: "dy6545286@DY"}
-  - {name: node1, address: 192.168.0.12, internalAddress: 192.168.0.12, user: root, password: "dy6545286@DY"}
-  - {name: node2, address: 192.168.0.13, internalAddress: 192.168.0.13, user: root, password: "dy6545286@DY"}
+  - {name: master, address: 192.168.0.11, internalAddress: 192.168.0.11, user: root, password: "123456"}
+  - {name: node1, address: 192.168.0.12, internalAddress: 192.168.0.12, user: root, password: "123456"}
+  - {name: node2, address: 192.168.0.13, internalAddress: 192.168.0.13, user: root, password: "123456"}
   roleGroups:
     etcd:
     - master
@@ -72,7 +72,7 @@ spec:
     address: ""
     port: 6443
   kubernetes:
-    version: version
+    version: v1.23.7
     clusterName: linux.io
     autoRenewCerts: true
     containerManager: 
