@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 基于KubeKey安装Kubernetes集群
-date: 2020-07-11
+date: 2022-07-11
 tags: KUBEKEY
 ---
 
