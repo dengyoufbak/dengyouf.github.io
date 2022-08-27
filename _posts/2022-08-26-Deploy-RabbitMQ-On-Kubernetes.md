@@ -2,7 +2,7 @@
 layout: post
 title: 使用Operator创建RabbitMQ集群
 date: 2020-08-26
-tags: Kubernetess
+tags: Kubernetes
 ---
 
 # 安装要求
