@@ -28,6 +28,41 @@ tags: ElasticSearch
 
 ## 三、准备环境
 
+```
+# 增加文件描述符
+cat >>/etc/security/limits.conf<< EOF
+*               soft      nofile          65536
+*               hard      nofile          65536
+*               soft      nproc           65536
+*               hard      nproc           65536
+*               hard      memlock         unlimited
+*               soft      memlock         unlimited
+EOF
+```
+```
+# 修改默认限制内存
+cat >>/etc/systemd/system.conf<< EOF
+DefaultLimitNOFILE=65536
+DefaultLimitNPROC=32000
+DefaultLimitMEMLOCK=infinity
+EOF
+```
+```
+# 优化内核
+cat >>/etc/sysctl.conf<< EOF
+# 关闭交换内存
+vm.swappiness =0
+# 影响java线程数量，建议修改为262144或者更高
+vm.max_map_count= 262144
+# 优化内核listen连接
+net.core.somaxconn=65535
+# 最大打开文件描述符数，建议修改为655360或者更高
+fs.file-max=655360
+# 开启ipv4转发
+net.ipv4.ip_forward= 1
+EOF
+sysctl  --system
+```
 ### 3.1 安装 docker
 
 ```
