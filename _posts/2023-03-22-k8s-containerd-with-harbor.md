@@ -1,6 +1,6 @@
 ---
 layout: post
-title: K8S搭配COntainerd拉取Habor镜像进行部署
+title: K8S搭配Containerd拉取Habor私有镜像进行部署
 date: 2023-03-22
 tags: Kubernetes
 ---
