@@ -2,7 +2,7 @@
 layout: post
 title: Docker 安装 Elasticsearch 7.X 集群.md
 date: 2023-03-11
-tags: ElasticSearch
+tags: Elasticsearch
 ---
 
 ## 一、Elasticsearch 简介
